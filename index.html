@@ -4,7 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AquaBase — Water Industry Equipment Registry</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
@@ -13,10 +12,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%;overflow:hidden}
 body{background:#080e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:#0d1424}
-::-webkit-scrollbar-thumb{background:#243550;border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:#0ea5e9}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#0d1424}
+::-webkit-scrollbar-thumb{background:#243550;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#0ea5e9}
 input,select,textarea,button{font-family:inherit;outline:none}
 input::placeholder,textarea::placeholder{color:#4a5a72}
 select option{background:#111d2e!important;color:#e2e8f0}
@@ -25,774 +22,557 @@ select option{background:#111d2e!important;color:#e2e8f0}
 <body>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
-const {useState,useRef,useMemo,useCallback,useEffect}=React;
+const {useState,useRef,useMemo,useCallback}=React;
 
-// lucide-react polyfill - simple SVG icons
-const _icon=(d,vb="0 0 24 24")=>function Icon({size=16,color="currentColor",style={}}){
-  return React.createElement("svg",{xmlns:"http://www.w3.org/2000/svg",width:size,height:size,viewBox:vb,fill:"none",stroke:color,strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round",style:{display:"inline-block",verticalAlign:"middle",...style}},
-    React.createElement("path",{d}));
-};
-const _icon2=(d1,d2,vb="0 0 24 24")=>function Icon({size=16,color="currentColor",style={}}){
-  return React.createElement("svg",{xmlns:"http://www.w3.org/2000/svg",width:size,height:size,viewBox:vb,fill:"none",stroke:color,strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round",style:{display:"inline-block",verticalAlign:"middle",...style}},
-    React.createElement("path",{d:d1}),React.createElement("path",{d:d2}));
-};
-const Plus=_icon("M12 5v14M5 12h14");
-const Download=_icon2("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4","M7 10l5 5 5-5M12 15V3");
-const Upload=_icon2("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4","M17 8l-5-5-5 5M12 3v12");
-const Search=_icon2("M21 21l-4.35-4.35","M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z");
-const Edit2=_icon2("M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z","");
-const Trash2=_icon2("M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6","M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2");
-const X=_icon("M18 6 6 18M6 6l12 12");
-const Droplets=_icon2("M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z","M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97");
-const Wrench=_icon2("M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z","");
-const Cpu=_icon2("M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 0-2-2v-4m0 0h18","M3 9h18M3 15h18");
-const Pencil=_icon2("M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7","M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z");
-const AlertTriangle=_icon2("M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z","M12 9v4M12 17h.01");
-const CheckCircle=_icon2("M22 11.08V12a10 10 0 1 1-5.93-9.14","M22 4 12 14.01l-3-3");
-const ChevronRight=_icon("M9 18l6-6-6-6");
-const Activity=_icon("M22 12h-4l-3 9L9 3l-3 9H2");
-const Zap=_icon("M13 2 3 14h9l-1 8 10-12h-9l1-8z");
-const Radio=_icon2("M2 20h.01M7 20v-4","M12 20v-8M17 20V8M22 4v16");
+/* Lucide-compatible icon stubs */
+const Icn=({d,size=16,color="currentColor",style:st})=>(
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+    style={{display:"inline-block",verticalAlign:"middle",...(st||{})}}>
+    <path d={d}/>
+  </svg>
+);
+const Plus=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const Download=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+const Upload=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
+const Search=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+const Edit2=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const Trash2=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+const X=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const Droplets=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>;
+const Wrench=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
+const Cpu=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>;
+const Pencil=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>;
+const AlertTriangle=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+const CheckCircle=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+const ChevronRight=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><polyline points="9 18 15 12 9 6"/></svg>;
+const Settings=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+const Zap=p=><svg xmlns="http://www.w3.org/2000/svg" width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke={p.color||"currentColor"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",...(p.style||{})}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
 
-import { Plus, Download, Upload, Search, Edit2, Trash2, X,
-  Droplets, Wrench, Cpu, Pencil, AlertTriangle, CheckCircle,
-  ChevronRight, Activity, Zap, Radio } from "lucide-react";
 
-/* ─── Palette ─── */
+/* ═══════════════ PALETTE ═══════════════ */
 const BG="#080e1a",SRF="#0d1424",CRD="#111d2e",BDR="#1c2e45",BDR2="#243550";
 const ACC="#0ea5e9",TXT="#e2e8f0",MUT="#94a3b8",DIM="#4a5a72";
 const SUC="#10b981",DNG="#ef4444",WRN="#f59e0b";
 const MC="#3b82f6",IC="#a855f7";
 
-const STC={Active:{c:"#10b981",b:"#10b98120"},Standby:{c:"#3b82f6",b:"#3b82f620"},
-  Maintenance:{c:"#f59e0b",b:"#f59e0b20"},Decommissioned:{c:"#ef4444",b:"#ef444420"},Spare:{c:"#8b5cf6",b:"#8b5cf620"}};
-const SIGC={AI:"#06b6d4",AO:"#0ea5e9",DI:"#84cc16",DO:"#10b981",
-  "HART AI":"#a855f7","HART AO":"#8b5cf6",Pulse:"#f59e0b"};
+const STC={Active:{c:"#10b981",b:"#10b98120"},Standby:{c:"#3b82f6",b:"#3b82f620"},Maintenance:{c:"#f59e0b",b:"#f59e0b20"},Decommissioned:{c:"#ef4444",b:"#ef444420"},Spare:{c:"#8b5cf6",b:"#8b5cf620"}};
+const SIGC={AI:"#06b6d4",AO:"#0ea5e9",DI:"#84cc16",DO:"#10b981","HART AI":"#a855f7","HART AO":"#8b5cf6",Pulse:"#f59e0b"};
 
-/* ─── Comms protocols ─── */
-const PROTOCOLS=["Hardwired","Profibus DP","Profinet","Modbus TCP/IP","Modbus RTU",
-  "OPC-UA","EtherNet/IP","CANopen","CANbus","DeviceNet","EtherCAT","Foundation Fieldbus"];
+/* ═══════════════ CONTROLLER VARIANTS ═══════════════ */
+const CV={
+  VFD:[
+    {id:"RUN", label:"Run Feedback",          sig:"DI"},{id:"FLT",label:"Fault / Trip",          sig:"DI"},
+    {id:"RDY", label:"Ready Signal",          sig:"DI"},{id:"FWD",label:"Forward Running",       sig:"DI"},
+    {id:"REV", label:"Reverse Running",       sig:"DI"},{id:"LRM",label:"Local / Remote Mode",   sig:"DI"},
+    {id:"TMP", label:"Temperature Guard",     sig:"DI"},{id:"SRT",label:"Start Command",         sig:"DO"},
+    {id:"STP", label:"Stop Command",          sig:"DO"},{id:"FWC",label:"Forward Command",       sig:"DO"},
+    {id:"RVC", label:"Reverse Command",       sig:"DO"},{id:"SPRF",label:"Speed Reference (SP)", sig:"AO"},
+    {id:"SPFB",label:"Speed Feedback",        sig:"AI"},{id:"PWR", label:"Power Consumption",    sig:"AI"},
+    {id:"TRQ", label:"Torque Feedback",       sig:"AI"},{id:"CUR", label:"Current Feedback",     sig:"AI"},
+    {id:"RTM", label:"Total Runtime",         sig:"AI"},
+  ],
+  SoftStarter:[
+    {id:"RUN",label:"Run Feedback",    sig:"DI"},{id:"FLT",label:"Fault / Trip",     sig:"DI"},
+    {id:"RDY",label:"Ready Signal",    sig:"DI"},{id:"TMP",label:"Temperature Guard",sig:"DI"},
+    {id:"SRT",label:"Start Command",   sig:"DO"},{id:"STP",label:"Stop Command",     sig:"DO"},
+    {id:"CUR",label:"Current Feedback",sig:"AI"},{id:"PWR",label:"Power Consumption",sig:"AI"},
+  ],
+  DOL:[
+    {id:"RUN",label:"Run Feedback",     sig:"DI"},{id:"FLT",label:"Fault / Trip",sig:"DI"},
+    {id:"CMD",label:"Start/Stop Command",sig:"DO"},{id:"TMP",label:"Thermal Trip", sig:"DI"},
+  ],
+  ElectricActuator:[
+    {id:"OPN", label:"Open Command",              sig:"DO"},{id:"CLS", label:"Close Command",         sig:"DO"},
+    {id:"STP", label:"Stop Command",              sig:"DO"},{id:"OPFB",label:"Open Position FB",      sig:"DI"},
+    {id:"CLFB",label:"Closed Position FB",        sig:"DI"},{id:"POSP",label:"Position Setpoint",    sig:"AO"},
+    {id:"POFB",label:"Position Feedback",         sig:"AI"},{id:"TRQ", label:"Torque Feedback",       sig:"AI"},
+    {id:"PWR", label:"Power Consumption",         sig:"AI"},{id:"FLT", label:"Fault / Alarm",          sig:"DI"},
+    {id:"LRM", label:"Local / Remote Mode",       sig:"DI"},
+  ],
+  PneumaticActuator:[
+    {id:"OPN", label:"Open Command (Solenoid)",   sig:"DO"},{id:"CLS", label:"Close Command (Solenoid)",sig:"DO"},
+    {id:"OPFB",label:"Open Position FB",          sig:"DI"},{id:"CLFB",label:"Closed Position FB",   sig:"DI"},
+    {id:"FLT", label:"Fault / Alarm",              sig:"DI"},
+  ],
+  SolenoidDirect:[
+    {id:"CMD", label:"Energize Command",  sig:"DO"},{id:"OPFB",label:"Open Position FB",  sig:"DI"},
+    {id:"CLFB",label:"Closed Position FB",sig:"DI"},
+  ],
+  None:[],
+};
 
-/* ─── Motor variants ─── */
-const MOTOR_VARIANTS=[
-  {id:"RUN_FB",  name:"Run Feedback",           code:"RUN", sigT:"DI",cat:"Feedback"},
-  {id:"RDY_FB",  name:"Ready Signal",           code:"RDY", sigT:"DI",cat:"Feedback"},
-  {id:"FLT_FB",  name:"Fault / Trip",           code:"FLT", sigT:"DI",cat:"Feedback"},
-  {id:"FWD_FB",  name:"Forward Running",        code:"FWD", sigT:"DI",cat:"Feedback"},
-  {id:"REV_FB",  name:"Reverse Running",        code:"REV", sigT:"DI",cat:"Feedback"},
-  {id:"LRM_FB",  name:"Local / Remote Mode",    code:"LRM", sigT:"DI",cat:"Feedback"},
-  {id:"TMP_FB",  name:"Temperature Guard",      code:"TMPG",sigT:"DI",cat:"Feedback"},
-  {id:"SRT_CMD", name:"Start Command",          code:"SRT", sigT:"DO",cat:"Command"},
-  {id:"STP_CMD", name:"Stop Command",           code:"STP", sigT:"DO",cat:"Command"},
-  {id:"FWD_CMD", name:"Forward Command",        code:"FWDC",sigT:"DO",cat:"Command"},
-  {id:"REV_CMD", name:"Reverse Command",        code:"REVC",sigT:"DO",cat:"Command"},
-  {id:"RST_CMD", name:"Fault Reset Command",    code:"RST", sigT:"DO",cat:"Command"},
-  {id:"SPD_REF", name:"Speed Reference (SP)",   code:"SPRF",sigT:"AO",cat:"Analog SP"},
-  {id:"SPD_FB",  name:"Speed Feedback",         code:"SPFB",sigT:"AI",cat:"Analog FB"},
-  {id:"PWR_FB",  name:"Power Consumption",      code:"PWR", sigT:"AI",cat:"Analog FB"},
-  {id:"TRQ_FB",  name:"Torque Feedback",        code:"TRQ", sigT:"AI",cat:"Analog FB"},
-  {id:"CUR_FB",  name:"Current Feedback",       code:"CUR", sigT:"AI",cat:"Analog FB"},
-  {id:"RTM_FB",  name:"Total Runtime",          code:"RTM", sigT:"AI",cat:"Analog FB"},
+const CTRL_OPTIONS={
+  motor:["VFD","SoftStarter","DOL","None"],
+  pump:[], // pumps don't have controllers by themselves (driven by associated motor)
+  valve:["ElectricActuator","PneumaticActuator","None"],
+  solenoid:["SolenoidDirect","None"],
+};
+
+const CTRL_LABEL={"VFD":"VFD (Variable Frequency Drive)","SoftStarter":"Soft Starter","DOL":"Direct On Load (DOL)","ElectricActuator":"Electric Actuator","PneumaticActuator":"Pneumatic Actuator","SolenoidDirect":"Direct PLC Output","None":"None"};
+
+const PROTOCOLS=["Hardwired","Profibus DP","Profibus PA","Profinet IO","Modbus TCP/IP","Modbus RTU","EtherNet/IP","OPC-UA","EtherCAT","CANbus","DeviceNet","HART 7","Foundation Fieldbus"];
+
+/* ═══════════════ PROBE DEFINITIONS ═══════════════ */
+const PROBE_TYPES={
+  "Vibration Sensor":    {sig:"AI",sensors:["ICP Accelerometer (4-20mA)","ICP Accelerometer (IEPE)","Eddy Current Probe","Velocity Sensor"]},
+  "Coil Temperature":    {sig:"AI",sensors:["PT100 (3-wire)","PT100 (4-wire)","PT1000","KTY84","PTC Thermistor"]},
+  "Bearing Temperature": {sig:"AI",sensors:["PT100 (3-wire)","PT100 (4-wire)","PT1000","KTY84","Thermocouple Type K"]},
+};
+
+/* ═══════════════ EQUIPMENT DEFINITIONS ═══════════════ */
+/* Common top fields injected into every form */
+const TOP_FIELDS=[
+  {k:"area",   l:"Area Code",      t:"text", ph:"e.g. IN001"},
+  {k:"pidRef", l:"P&ID Reference", t:"text", ph:"e.g. PID-001"},
 ];
 
-/* ─── Valve variants ─── */
-const VALVE_VARIANTS=[
-  {id:"OPN_CMD", name:"Open Command",              code:"OPN", sigT:"DO",cat:"Command"},
-  {id:"CLS_CMD", name:"Close Command",             code:"CLS", sigT:"DO",cat:"Command"},
-  {id:"STP_CMD", name:"Stop Command",              code:"STP", sigT:"DO",cat:"Command"},
-  {id:"OPN_FB",  name:"Open Position Feedback",    code:"OPFB",sigT:"DI",cat:"Feedback"},
-  {id:"CLS_FB",  name:"Closed Position Feedback",  code:"CLFB",sigT:"DI",cat:"Feedback"},
-  {id:"FLT_FB",  name:"Fault / Alarm",             code:"FLT", sigT:"DI",cat:"Feedback"},
-  {id:"LRM_FB",  name:"Local / Remote Mode",       code:"LRM", sigT:"DI",cat:"Feedback"},
-  {id:"POS_SP",  name:"Position Setpoint",         code:"POSP",sigT:"AO",cat:"Analog SP"},
-  {id:"POS_FB",  name:"Position Feedback",         code:"POFB",sigT:"AI",cat:"Analog FB"},
-  {id:"TRQ_FB",  name:"Torque Feedback",           code:"TRQ", sigT:"AI",cat:"Analog FB"},
-  {id:"PWR_FB",  name:"Power Consumption",         code:"PWR", sigT:"AI",cat:"Analog FB"},
-];
-
-/* ─── Solenoid variants ─── */
-const SOL_VARIANTS=[
-  {id:"OPN_CMD", name:"Open / Energise Command",   code:"OPN", sigT:"DO",cat:"Command"},
-  {id:"CLS_CMD", name:"Close / De-energise Cmd",   code:"CLS", sigT:"DO",cat:"Command"},
-  {id:"OPN_FB",  name:"Open Feedback",             code:"OPFB",sigT:"DI",cat:"Feedback"},
-  {id:"CLS_FB",  name:"Closed Feedback",           code:"CLFB",sigT:"DI",cat:"Feedback"},
-  {id:"FLT_FB",  name:"Fault",                     code:"FLT", sigT:"DI",cat:"Feedback"},
-];
-
-/* ─── Probe type catalogue ─── */
-const PROBE_CATALOGUE=[
-  {type:"Vibration Sensor",    sensors:["ICP Accelerometer 4-20mA","ICP Accelerometer 0-10V","Piezoelectric","Eddy Current Probe","Velocity Transducer"]},
-  {type:"Coil Temperature",    sensors:["PT100 2-wire","PT100 3-wire","PT100 4-wire","PT1000","KTY84","NTC 10k","Type K Thermocouple"]},
-  {type:"Bearing Temperature", sensors:["PT100 2-wire","PT100 3-wire","PT100 4-wire","PT1000","KTY84","NTC 10k","Type K Thermocouple"]},
-];
-const PROBE_POSITIONS=["Drive End (DE)","Non-Drive End (NDE)",
-  "Coil Phase A","Coil Phase B","Coil Phase C",
-  "Top Bearing","Bottom Bearing","Radial","Axial","Custom"];
-
-/* ─── IO fields for I&C instruments ─── */
-const IO_FIELDS=[
-  {k:"ioTag",     l:"IO Tag / Channel ID",  t:"text"},
-  {k:"signalType",l:"Signal Type",          t:"sel",o:["AI","AO","DI","DO","HART AI","HART AO","Pulse"]},
-  {k:"plcCabinet",l:"PLC / Cabinet",        t:"text"},
-  {k:"ioRack",    l:"Rack",                 t:"text"},
-  {k:"ioSlot",    l:"Slot / Module",        t:"text"},
-  {k:"ioChannel", l:"Channel Address",      t:"text"},
-];
-
-/* ─── Mechanics definitions ─── */
 const MECH_DEF={
-  pump:{label:"Pumps",color:"#3b82f6",prefix:"P",hasProbes:true,
+  pump:{label:"Pumps",color:"#3b82f6",prefix:"P",
     summary:["pumpType","flowRate","head","power","location"],
     fields:[
-      {k:"description",l:"Description",t:"text",req:true},
-      {k:"area",       l:"Area Code",          t:"text"},
-      {k:"pidRef",     l:"P&ID Reference",     t:"text"},
-      {k:"service",    l:"Service",            t:"text"},
-      {k:"fluid",      l:"Process Fluid",      t:"text"},
-      {k:"pumpType",   l:"Pump Type",          t:"sel",o:["Centrifugal","Submersible","Positive Displacement","Gear","Peristaltic","Dosing","Axial Flow"]},
-      {k:"flowRate",   l:"Flow Rate (m\u00b3/h)",t:"num"},
-      {k:"head",       l:"Total Head (m)",     t:"num"},
-      {k:"power",      l:"Power (kW)",         t:"num"},
-      {k:"speed",      l:"Speed (RPM)",        t:"num"},
-      {k:"efficiency", l:"Efficiency (%)",     t:"num"},
-      {k:"material",   l:"Casing Material",    t:"text"},
-      {k:"sealType",   l:"Seal Type",          t:"sel",o:["Mechanical Seal","Packed Gland","Mag Drive","Canned Motor","Lip Seal"]},
-      {k:"inletDN",    l:"Inlet Size (DN)",    t:"num"},
-      {k:"outletDN",   l:"Outlet Size (DN)",   t:"num"},
-      {k:"manufacturer",l:"Manufacturer",      t:"text"},
-      {k:"model",      l:"Model / Series",     t:"text"},
-      {k:"serialNumber",l:"Serial Number",     t:"text"},
-      {k:"location",   l:"Physical Location",  t:"text"},
-      {k:"status",     l:"Status",             t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",      l:"Notes",              t:"area"},
+      {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+      {k:"fluid",l:"Process Fluid",t:"text"},
+      {k:"pumpType",l:"Pump Type",t:"sel",o:["Centrifugal","Submersible","Positive Displacement","Gear","Peristaltic","Dosing","Axial Flow"]},
+      {k:"flowRate",l:"Flow Rate (m\u00b3/h)",t:"num"},{k:"head",l:"Total Head (m)",t:"num"},
+      {k:"power",l:"Power (kW)",t:"num"},{k:"speed",l:"Speed (RPM)",t:"num"},{k:"efficiency",l:"Efficiency (%)",t:"num"},
+      {k:"material",l:"Casing Material",t:"text"},
+      {k:"sealType",l:"Seal Type",t:"sel",o:["Mechanical Seal","Packed Gland","Mag Drive","Canned Motor","Lip Seal"]},
+      {k:"inletDN",l:"Inlet Size (DN)",t:"num"},{k:"outletDN",l:"Outlet Size (DN)",t:"num"},
+      {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model / Series",t:"text"},
+      {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+      {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
+      {k:"notes",l:"Notes",t:"area"},
     ]},
-  motor:{label:"Motors",color:"#8b5cf6",prefix:"M",hasProbes:true,hasController:true,controllerVariants:"motor",
+  motor:{label:"Motors",color:"#8b5cf6",prefix:"M",
     summary:["power","voltage","speed","efficiencyClass","location"],
     fields:[
-      {k:"description",    l:"Description",          t:"text",req:true},
-      {k:"area",           l:"Area Code",            t:"text"},
-      {k:"pidRef",         l:"P&ID Reference",       t:"text"},
-      {k:"service",        l:"Service",              t:"text"},
-      {k:"power",          l:"Power (kW)",           t:"num"},
-      {k:"voltage",        l:"Supply Voltage (V)",   t:"num"},
-      {k:"current",        l:"Full Load Current (A)",t:"num"},
-      {k:"speed",          l:"Rated Speed (RPM)",    t:"num"},
-      {k:"frequency",      l:"Frequency (Hz)",       t:"sel",o:["50","60"]},
-      {k:"phases",         l:"Phases",               t:"sel",o:["1-Phase","3-Phase"]},
-      {k:"efficiencyClass",l:"Efficiency Class",     t:"sel",o:["IE1","IE2","IE3","IE4","IE5"]},
-      {k:"frameSize",      l:"Frame Size (IEC)",     t:"text"},
-      {k:"ipRating",       l:"IP Rating",            t:"sel",o:["IP44","IP54","IP55","IP65","IP66","IP67","IP68"]},
-      {k:"insulationClass",l:"Insulation Class",     t:"sel",o:["A","B","F","H"]},
-      {k:"mounting",       l:"Mounting",             t:"sel",o:["B3 (Foot)","B5 (Flange)","B35 (Foot+Flange)","B14 (Face)","V1 (Vertical)"]},
-      {k:"manufacturer",   l:"Manufacturer",         t:"text"},
-      {k:"model",          l:"Model",                t:"text"},
-      {k:"serialNumber",   l:"Serial Number",        t:"text"},
-      {k:"location",       l:"Physical Location",    t:"text"},
-      {k:"status",         l:"Status",               t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",          l:"Notes",                t:"area"},
+      {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+      {k:"power",l:"Power (kW)",t:"num"},{k:"voltage",l:"Supply Voltage (V)",t:"num"},
+      {k:"current",l:"Full Load Current (A)",t:"num"},{k:"speed",l:"Rated Speed (RPM)",t:"num"},
+      {k:"frequency",l:"Frequency (Hz)",t:"sel",o:["50","60"]},
+      {k:"phases",l:"Phases",t:"sel",o:["1-Phase","3-Phase"]},
+      {k:"efficiencyClass",l:"Efficiency Class",t:"sel",o:["IE1","IE2","IE3","IE4","IE5"]},
+      {k:"frameSize",l:"Frame Size (IEC)",t:"text"},
+      {k:"ipRating",l:"IP Rating",t:"sel",o:["IP44","IP54","IP55","IP65","IP66","IP67","IP68"]},
+      {k:"insulationClass",l:"Insulation Class",t:"sel",o:["A","B","F","H"]},
+      {k:"mounting",l:"Mounting",t:"sel",o:["B3 (Foot)","B5 (Flange)","B35 (Foot+Flange)","B14 (Face)","V1 (Vertical)"]},
+      {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+      {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+      {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
+      {k:"notes",l:"Notes",t:"area"},
     ]},
-  valve:{label:"Valves",color:"#10b981",prefix:"V",hasController:true,controllerVariants:"valve",
-    summary:["valveType","size","pressureClass","actionType","location"],
+  valve:{label:"Valves",color:"#10b981",prefix:"V",
+    summary:["valveType","size","pressureClass","actuatorType","location"],
     fields:[
-      {k:"description",  l:"Description",          t:"text",req:true},
-      {k:"area",         l:"Area Code",            t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",       t:"text"},
-      {k:"service",      l:"Service",              t:"text"},
-      {k:"fluid",        l:"Process Fluid",        t:"text"},
-      {k:"valveType",    l:"Valve Type",           t:"sel",o:["Gate","Globe","Ball","Butterfly","Check (Non-Return)","Diaphragm","Plug","Needle","Safety / Relief","Control"]},
-      {k:"size",         l:"Nominal Size (DN)",    t:"num"},
-      {k:"pressureClass",l:"Pressure Class",       t:"sel",o:["PN6","PN10","PN16","PN25","PN40","ANSI 150","ANSI 300","ANSI 600"]},
-      {k:"bodyMaterial", l:"Body Material",        t:"text"},
-      {k:"trimMaterial", l:"Trim / Disc Material", t:"text"},
-      {k:"seatMaterial", l:"Seat Material",        t:"text"},
-      {k:"actionType",   l:"Actuator Action",      t:"sel",o:["Single Action (Spring-Return)","Double Action (Spring-Return Fail-Open)","Double Action (Spring-Return Fail-Closed)","Dual Action (Double-Acting)","Manual Only"]},
-      {k:"secondaryValve",l:"Secondary Shaft / Valve (if dual)", t:"text"},
-      {k:"endConnection",l:"End Connection",       t:"sel",o:["Flanged","Threaded (BSP)","Threaded (NPT)","Socket Weld","Butt Weld","Wafer","Lug","Grooved"]},
-      {k:"cv",           l:"Flow Coefficient Cv",  t:"num"},
-      {k:"manufacturer", l:"Manufacturer",         t:"text"},
-      {k:"model",        l:"Model",                t:"text"},
-      {k:"serialNumber", l:"Serial Number",        t:"text"},
-      {k:"location",     l:"Physical Location",    t:"text"},
-      {k:"status",       l:"Status",               t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                t:"area"},
+      {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+      {k:"fluid",l:"Process Fluid",t:"text"},
+      {k:"valveType",l:"Valve Type",t:"sel",o:["Gate","Globe","Ball","Butterfly","Check (Non-Return)","Diaphragm","Plug","Needle","Safety / Relief","Control"]},
+      {k:"actionType",l:"Action Type",t:"sel",o:["Single Action","Dual Action (2 shafts)","Dual Action (2 valves)"]},
+      {k:"secondaryValve",l:"Secondary Valve / Shaft Description",t:"text"},
+      {k:"size",l:"Nominal Size (DN)",t:"num"},
+      {k:"pressureClass",l:"Pressure Class",t:"sel",o:["PN6","PN10","PN16","PN25","PN40","ANSI 150","ANSI 300","ANSI 600"]},
+      {k:"bodyMaterial",l:"Body Material",t:"text"},{k:"trimMaterial",l:"Trim / Disc Material",t:"text"},
+      {k:"seatMaterial",l:"Seat Material",t:"text"},
+      {k:"actuatorType",l:"Actuator Type",t:"sel",o:["Manual (Handwheel)","Manual (Lever)","Electric Actuator","Pneumatic (Spring-Return)","Pneumatic (Double-Acting)","Hydraulic","None"]},
+      {k:"endConnection",l:"End Connection",t:"sel",o:["Flanged","Threaded (BSP)","Threaded (NPT)","Socket Weld","Butt Weld","Wafer","Lug","Grooved"]},
+      {k:"cv",l:"Flow Coefficient Cv",t:"num"},
+      {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+      {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+      {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
+      {k:"notes",l:"Notes",t:"area"},
     ]},
-  solenoid:{label:"Solenoid Valves",color:"#f59e0b",prefix:"SV",hasController:true,controllerVariants:"solenoid",
+  solenoid:{label:"Solenoid Valves",color:"#f59e0b",prefix:"SV",
     summary:["action","coilVoltage","pressureMax","ipRating","location"],
     fields:[
-      {k:"description",  l:"Description",                t:"text",req:true},
-      {k:"area",         l:"Area Code",                  t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",             t:"text"},
-      {k:"service",      l:"Service",                    t:"text"},
-      {k:"fluid",        l:"Process Fluid",              t:"text"},
-      {k:"size",         l:"Port Size (mm/DN)",          t:"num"},
-      {k:"coilVoltage",  l:"Coil Voltage (VAC/VDC)",    t:"text"},
-      {k:"powerW",       l:"Power Consumption (W)",      t:"num"},
-      {k:"pressureMin",  l:"Min Pressure (bar)",         t:"num"},
-      {k:"pressureMax",  l:"Max Pressure (bar)",         t:"num"},
-      {k:"action",       l:"Fail-Safe Action",           t:"sel",o:["Normally Open (NO)","Normally Closed (NC)","Bistable / Latching","Universal"]},
-      {k:"operationType",l:"Operation Type",             t:"sel",o:["Direct Acting","Pilot Operated","Semi-Direct Acting"]},
-      {k:"bodyMaterial", l:"Body Material",              t:"text"},
-      {k:"sealMaterial", l:"Seal / Diaphragm Material",  t:"text"},
-      {k:"ipRating",     l:"IP Rating",                  t:"sel",o:["IP54","IP65","IP67","IP68","IP69K"]},
-      {k:"manufacturer", l:"Manufacturer",               t:"text"},
-      {k:"model",        l:"Model",                      t:"text"},
-      {k:"serialNumber", l:"Serial Number",              t:"text"},
-      {k:"location",     l:"Physical Location",          t:"text"},
-      {k:"status",       l:"Status",                     t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                      t:"area"},
+      {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+      {k:"fluid",l:"Process Fluid",t:"text"},{k:"size",l:"Port Size (mm/DN)",t:"num"},
+      {k:"coilVoltage",l:"Coil Voltage (VAC/VDC)",t:"text"},{k:"powerW",l:"Power Consumption (W)",t:"num"},
+      {k:"pressureMin",l:"Min Pressure (bar)",t:"num"},{k:"pressureMax",l:"Max Pressure (bar)",t:"num"},
+      {k:"action",l:"Fail-Safe Action",t:"sel",o:["Normally Open (NO)","Normally Closed (NC)","Bistable / Latching","Universal"]},
+      {k:"operationType",l:"Operation Type",t:"sel",o:["Direct Acting","Pilot Operated","Semi-Direct Acting"]},
+      {k:"bodyMaterial",l:"Body Material",t:"text"},{k:"sealMaterial",l:"Seal / Diaphragm Material",t:"text"},
+      {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP67","IP68","IP69K"]},
+      {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+      {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+      {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
+      {k:"notes",l:"Notes",t:"area"},
     ]},
 };
 
-/* ─── I&C definitions (IO fields appended) ─── */
+const IO_FIELDS=[
+  {k:"ioTag",l:"IO Tag / Channel ID",t:"text"},{k:"signalType",l:"Signal Type",t:"sel",o:["AI","AO","DI","DO","HART AI","HART AO","Pulse"]},
+  {k:"plcCabinet",l:"PLC / Cabinet",t:"text"},{k:"ioRack",l:"Rack",t:"text"},
+  {k:"ioSlot",l:"Slot / Module",t:"text"},{k:"ioChannel",l:"Channel Address",t:"text"},
+];
+
 const IAC_BASE={
-  levelTx:{label:"Level Transmitters",color:"#06b6d4",prefix:"LT",
-    summary:["technology","rangeMax","engUnit","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",          t:"text",req:true},
-      {k:"area",         l:"Area Code",            t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",       t:"text"},
-      {k:"service",      l:"Service / Vessel",     t:"text"},
-      {k:"technology",   l:"Technology",           t:"sel",o:["Ultrasonic","Radar FMCW","Guided Wave Radar (GWR)","Hydrostatic / Submersible","Differential Pressure","Capacitance","Magnetostrictive"]},
-      {k:"rangeMin",     l:"Range Min (m)",        t:"num"},
-      {k:"rangeMax",     l:"Range Max (m)",        t:"num"},
-      {k:"engUnit",      l:"Eng. Unit",            t:"text"},
-      {k:"accuracy",     l:"Accuracy (% of span)", t:"num"},
-      {k:"alarmLL",      l:"Alarm LL (m)",         t:"num"},
-      {k:"alarmL",       l:"Alarm L (m)",          t:"num"},
-      {k:"alarmH",       l:"Alarm H (m)",          t:"num"},
-      {k:"alarmHH",      l:"Alarm HH (m)",         t:"num"},
-      {k:"processConn",  l:"Process Connection",   t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",      t:"text"},
-      {k:"ipRating",     l:"IP Rating",            t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"atex",         l:"Hazardous Area",       t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
-      {k:"manufacturer", l:"Manufacturer",         t:"text"},
-      {k:"model",        l:"Model",                t:"text"},
-      {k:"serialNumber", l:"Serial Number",        t:"text"},
-      {k:"location",     l:"Physical Location",    t:"text"},
-      {k:"status",       l:"Status",               t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                t:"area"},
-    ]},
-  flowTx:{label:"Flow Transmitters",color:"#0ea5e9",prefix:"FT",
-    summary:["technology","lineSize","flowMax","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",            t:"text",req:true},
-      {k:"area",         l:"Area Code",              t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",         t:"text"},
-      {k:"service",      l:"Service / Pipeline",     t:"text"},
-      {k:"fluid",        l:"Process Fluid",          t:"text"},
-      {k:"technology",   l:"Technology",             t:"sel",o:["Electromagnetic (Mag Meter)","Ultrasonic \u2013 Clamp-On","Ultrasonic \u2013 Inline","Coriolis (Mass Flow)","Vortex","Turbine","Differential Pressure","Variable Area (Rotameter)"]},
-      {k:"lineSize",     l:"Pipeline Size (DN)",     t:"num"},
-      {k:"flowMin",      l:"Flow Range Min (m\u00b3/h)",t:"num"},
-      {k:"flowMax",      l:"Flow Range Max (m\u00b3/h)",t:"num"},
-      {k:"engUnit",      l:"Eng. Unit",              t:"text"},
-      {k:"accuracy",     l:"Accuracy (% of reading)",t:"num"},
-      {k:"alarmL",       l:"Alarm L (m\u00b3/h)",   t:"num"},
-      {k:"alarmH",       l:"Alarm H (m\u00b3/h)",   t:"num"},
-      {k:"wetMaterial",  l:"Wetted Material",        t:"text"},
-      {k:"ipRating",     l:"IP Rating",              t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"manufacturer", l:"Manufacturer",           t:"text"},
-      {k:"model",        l:"Model",                  t:"text"},
-      {k:"serialNumber", l:"Serial Number",          t:"text"},
-      {k:"location",     l:"Physical Location",      t:"text"},
-      {k:"status",       l:"Status",                 t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                  t:"area"},
-    ]},
-  pressureTx:{label:"Pressure Transmitters",color:"#8b5cf6",prefix:"PT",
-    summary:["rangeMin","rangeMax","engUnit","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",          t:"text",req:true},
-      {k:"area",         l:"Area Code",            t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",       t:"text"},
-      {k:"service",      l:"Service",              t:"text"},
-      {k:"fluid",        l:"Process Fluid",        t:"text"},
-      {k:"rangeMin",     l:"Range Min (bar)",      t:"num"},
-      {k:"rangeMax",     l:"Range Max (bar)",      t:"num"},
-      {k:"engUnit",      l:"Eng. Unit",            t:"text"},
-      {k:"accuracy",     l:"Accuracy (% of span)", t:"num"},
-      {k:"alarmL",       l:"Alarm L (bar)",        t:"num"},
-      {k:"alarmH",       l:"Alarm H (bar)",        t:"num"},
-      {k:"alarmHH",      l:"Alarm HH (bar)",       t:"num"},
-      {k:"processConn",  l:"Process Connection",   t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",      t:"text"},
-      {k:"ipRating",     l:"IP Rating",            t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"atex",         l:"Hazardous Area",       t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
-      {k:"manufacturer", l:"Manufacturer",         t:"text"},
-      {k:"model",        l:"Model",                t:"text"},
-      {k:"serialNumber", l:"Serial Number",        t:"text"},
-      {k:"location",     l:"Physical Location",    t:"text"},
-      {k:"status",       l:"Status",               t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                t:"area"},
-    ]},
-  dpTx:{label:"DP Transmitters",color:"#ec4899",prefix:"DPT",
-    summary:["application","rangeMax","engUnit","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",              t:"text",req:true},
-      {k:"area",         l:"Area Code",                t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",           t:"text"},
-      {k:"service",      l:"Service",                  t:"text"},
-      {k:"application",  l:"Application",              t:"sel",o:["Flow Measurement","Level Measurement","Filter \u0394P","Density Measurement","Interface Level"]},
-      {k:"fluid",        l:"Process Fluid",            t:"text"},
-      {k:"rangeMin",     l:"Range Min (mbar)",         t:"num"},
-      {k:"rangeMax",     l:"Range Max (mbar)",         t:"num"},
-      {k:"engUnit",      l:"Eng. Unit",                t:"text"},
-      {k:"accuracy",     l:"Accuracy (% of span)",     t:"num"},
-      {k:"alarmH",       l:"Alarm H (mbar)",           t:"num"},
-      {k:"alarmHH",      l:"Alarm HH (mbar)",          t:"num"},
-      {k:"processConn",  l:"Process Connection",       t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",          t:"text"},
-      {k:"ipRating",     l:"IP Rating",                t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"manufacturer", l:"Manufacturer",             t:"text"},
-      {k:"model",        l:"Model",                    t:"text"},
-      {k:"serialNumber", l:"Serial Number",            t:"text"},
-      {k:"location",     l:"Physical Location",        t:"text"},
-      {k:"status",       l:"Status",                   t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                    t:"area"},
-    ]},
-  turbidityTx:{label:"Turbidity Transmitters",color:"#14b8a6",prefix:"TU",
-    summary:["principle","rangeMax","turbUnit","ioTag","signalType"],
-    fields:[
-      {k:"description",     l:"Description",            t:"text",req:true},
-      {k:"area",            l:"Area Code",              t:"text"},
-      {k:"pidRef",          l:"P&ID Reference",         t:"text"},
-      {k:"service",         l:"Service / Sample Point", t:"text"},
-      {k:"principle",       l:"Measurement Principle",  t:"sel",o:["Nephelometric (90\u00b0)","Scattered Light","Transmitted Light","Ratio Turbidimeter","Surface Scatter"]},
-      {k:"rangeMin",        l:"Range Min",              t:"num"},
-      {k:"rangeMax",        l:"Range Max",              t:"num"},
-      {k:"turbUnit",        l:"Measurement Unit",       t:"sel",o:["NTU","FTU","FNU","mg/L","ppm"]},
-      {k:"accuracy",        l:"Accuracy",               t:"text"},
-      {k:"installationType",l:"Installation",           t:"sel",o:["Immersion","Flow-Through","In-line","Portable"]},
-      {k:"processConn",     l:"Process Connection",     t:"text"},
-      {k:"ipRating",        l:"IP Rating",              t:"sel",o:["IP54","IP65","IP67","IP68"]},
-      {k:"manufacturer",    l:"Manufacturer",           t:"text"},
-      {k:"model",           l:"Model",                  t:"text"},
-      {k:"serialNumber",    l:"Serial Number",          t:"text"},
-      {k:"location",        l:"Physical Location",      t:"text"},
-      {k:"status",          l:"Status",                 t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",           l:"Notes",                  t:"area"},
-    ]},
-  levelSw:{label:"Level Switches",color:"#84cc16",prefix:"LS",
-    summary:["switchFn","technology","setpoint","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",           t:"text",req:true},
-      {k:"area",         l:"Area Code",             t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",        t:"text"},
-      {k:"service",      l:"Service / Vessel",      t:"text"},
-      {k:"switchFn",     l:"Switch Function",       t:"sel",o:["HH \u2014 High-High Level (LAHH)","H \u2014 High Level (LAH)","L \u2014 Low Level (LAL)","LL \u2014 Low-Low Level (LALL)"]},
-      {k:"technology",   l:"Technology",            t:"sel",o:["Float Switch","Vibrating Fork / Tuning Fork","Conductivity","Optical","Magnetic Float","Differential Pressure","Paddle / Rotary Paddle"]},
-      {k:"setpoint",     l:"Setpoint (m)",          t:"num"},
-      {k:"outputType",   l:"Output Type",           t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR","2-Wire NC","2-Wire NO"]},
-      {k:"supplyVoltage",l:"Supply Voltage",        t:"text"},
-      {k:"processConn",  l:"Process Connection",    t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",       t:"text"},
-      {k:"ipRating",     l:"IP Rating",             t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"atex",         l:"Hazardous Area",        t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
-      {k:"manufacturer", l:"Manufacturer",          t:"text"},
-      {k:"model",        l:"Model",                 t:"text"},
-      {k:"serialNumber", l:"Serial Number",         t:"text"},
-      {k:"location",     l:"Physical Location",     t:"text"},
-      {k:"status",       l:"Status",                t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                 t:"area"},
-    ]},
-  flowSw:{label:"Flow Switches",color:"#f97316",prefix:"FS",
-    summary:["switchFn","technology","setpoint","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",             t:"text",req:true},
-      {k:"area",         l:"Area Code",               t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",          t:"text"},
-      {k:"service",      l:"Service / Pipeline",      t:"text"},
-      {k:"fluid",        l:"Process Fluid",           t:"text"},
-      {k:"switchFn",     l:"Switch Function",         t:"sel",o:["HH \u2014 High-High Flow (FAHH)","H \u2014 High Flow (FAH)","L \u2014 Low Flow (FAL)","LL \u2014 No / Zero Flow"]},
-      {k:"technology",   l:"Technology",              t:"sel",o:["Paddle / Flap","Piston / Spring","Thermal Dispersion","Ultrasonic","Differential Pressure"]},
-      {k:"lineSize",     l:"Pipeline Size (DN)",      t:"num"},
-      {k:"setpoint",     l:"Setpoint (m\u00b3/h or m/s)",t:"text"},
-      {k:"outputType",   l:"Output Type",             t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
-      {k:"processConn",  l:"Process Connection",      t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",         t:"text"},
-      {k:"ipRating",     l:"IP Rating",               t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"manufacturer", l:"Manufacturer",            t:"text"},
-      {k:"model",        l:"Model",                   t:"text"},
-      {k:"serialNumber", l:"Serial Number",           t:"text"},
-      {k:"location",     l:"Physical Location",       t:"text"},
-      {k:"status",       l:"Status",                  t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                   t:"area"},
-    ]},
-  pressureSw:{label:"Pressure Switches",color:"#f59e0b",prefix:"PS",
-    summary:["switchFn","setpoint","outputType","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",         t:"text",req:true},
-      {k:"area",         l:"Area Code",           t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",      t:"text"},
-      {k:"service",      l:"Service",             t:"text"},
-      {k:"fluid",        l:"Process Fluid",       t:"text"},
-      {k:"switchFn",     l:"Switch Function",     t:"sel",o:["HH \u2014 High-High Pressure (PAHH)","H \u2014 High Pressure (PAH)","L \u2014 Low Pressure (PAL)","LL \u2014 Low-Low Pressure (PALL)"]},
-      {k:"setpoint",     l:"Setpoint (bar)",      t:"num"},
-      {k:"rangeMin",     l:"Range Min (bar)",     t:"num"},
-      {k:"rangeMax",     l:"Range Max (bar)",     t:"num"},
-      {k:"hysteresis",   l:"Hysteresis (bar)",    t:"num"},
-      {k:"outputType",   l:"Output Type",         t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
-      {k:"processConn",  l:"Process Connection",  t:"text"},
-      {k:"wetMaterial",  l:"Wetted Material",     t:"text"},
-      {k:"ipRating",     l:"IP Rating",           t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"manufacturer", l:"Manufacturer",        t:"text"},
-      {k:"model",        l:"Model",               t:"text"},
-      {k:"serialNumber", l:"Serial Number",       t:"text"},
-      {k:"location",     l:"Physical Location",   t:"text"},
-      {k:"status",       l:"Status",              t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",               t:"area"},
-    ]},
-  tempSw:{label:"Temperature Switches",color:"#ef4444",prefix:"TS",
-    summary:["switchFn","setpoint","sensorType","ioTag","signalType"],
-    fields:[
-      {k:"description",  l:"Description",           t:"text",req:true},
-      {k:"area",         l:"Area Code",             t:"text"},
-      {k:"pidRef",       l:"P&ID Reference",        t:"text"},
-      {k:"service",      l:"Service",               t:"text"},
-      {k:"switchFn",     l:"Switch Function",       t:"sel",o:["HH \u2014 High-High Temp (TAHH)","H \u2014 High Temp (TAH)","L \u2014 Low Temp (TAL)","LL \u2014 Low-Low Temp (TALL)"]},
-      {k:"setpoint",     l:"Setpoint (\u00b0C)",   t:"num"},
-      {k:"rangeMin",     l:"Range Min (\u00b0C)",  t:"num"},
-      {k:"rangeMax",     l:"Range Max (\u00b0C)",  t:"num"},
-      {k:"hysteresis",   l:"Hysteresis (K)",        t:"num"},
-      {k:"sensorType",   l:"Sensor Type",           t:"sel",o:["Bimetal Disc","Vapour Pressure","RTD PT100","Thermocouple Type K","Thermocouple Type J","Solid State"]},
-      {k:"outputType",   l:"Output Type",           t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
-      {k:"processConn",  l:"Process Connection",    t:"text"},
-      {k:"wellLength",   l:"Thermowell Length (mm)",t:"num"},
-      {k:"ipRating",     l:"IP Rating",             t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-      {k:"manufacturer", l:"Manufacturer",          t:"text"},
-      {k:"model",        l:"Model",                 t:"text"},
-      {k:"serialNumber", l:"Serial Number",         t:"text"},
-      {k:"location",     l:"Physical Location",     t:"text"},
-      {k:"status",       l:"Status",                t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},
-      {k:"notes",        l:"Notes",                 t:"area"},
-    ]},
+  levelTx:{label:"Level Transmitters",color:"#06b6d4",prefix:"LT",summary:["technology","rangeMax","engUnit","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service / Vessel",t:"text"},
+    {k:"technology",l:"Technology",t:"sel",o:["Ultrasonic","Radar FMCW","Guided Wave Radar (GWR)","Hydrostatic / Submersible","Differential Pressure","Capacitance","Magnetostrictive"]},
+    {k:"rangeMin",l:"Range Min (m)",t:"num"},{k:"rangeMax",l:"Range Max (m)",t:"num"},{k:"engUnit",l:"Eng. Unit",t:"text"},
+    {k:"accuracy",l:"Accuracy (% of span)",t:"num"},
+    {k:"alarmLL",l:"Alarm LL (m)",t:"num"},{k:"alarmL",l:"Alarm L (m)",t:"num"},{k:"alarmH",l:"Alarm H (m)",t:"num"},{k:"alarmHH",l:"Alarm HH (m)",t:"num"},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wetMaterial",l:"Wetted Material",t:"text"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"atex",l:"Hazardous Area",t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  flowTx:{label:"Flow Transmitters",color:"#0ea5e9",prefix:"FT",summary:["technology","lineSize","flowMax","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service / Pipeline",t:"text"},{k:"fluid",l:"Process Fluid",t:"text"},
+    {k:"technology",l:"Technology",t:"sel",o:["Electromagnetic (Mag Meter)","Ultrasonic \u2013 Clamp-On","Ultrasonic \u2013 Inline","Coriolis (Mass Flow)","Vortex","Turbine","Differential Pressure","Variable Area (Rotameter)"]},
+    {k:"lineSize",l:"Pipeline Size (DN)",t:"num"},{k:"flowMin",l:"Flow Range Min (m\u00b3/h)",t:"num"},{k:"flowMax",l:"Flow Range Max (m\u00b3/h)",t:"num"},
+    {k:"engUnit",l:"Eng. Unit",t:"text"},{k:"accuracy",l:"Accuracy (% of reading)",t:"num"},
+    {k:"alarmL",l:"Alarm L (m\u00b3/h)",t:"num"},{k:"alarmH",l:"Alarm H (m\u00b3/h)",t:"num"},
+    {k:"wetMaterial",l:"Wetted Material",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  pressureTx:{label:"Pressure Transmitters",color:"#8b5cf6",prefix:"PT",summary:["rangeMin","rangeMax","engUnit","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},{k:"fluid",l:"Process Fluid",t:"text"},
+    {k:"rangeMin",l:"Range Min (bar)",t:"num"},{k:"rangeMax",l:"Range Max (bar)",t:"num"},{k:"engUnit",l:"Eng. Unit",t:"text"},
+    {k:"accuracy",l:"Accuracy (% of span)",t:"num"},
+    {k:"alarmL",l:"Alarm L (bar)",t:"num"},{k:"alarmH",l:"Alarm H (bar)",t:"num"},{k:"alarmHH",l:"Alarm HH (bar)",t:"num"},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wetMaterial",l:"Wetted Material",t:"text"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"atex",l:"Hazardous Area",t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  dpTx:{label:"DP Transmitters",color:"#ec4899",prefix:"DPT",summary:["application","rangeMax","engUnit","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+    {k:"application",l:"Application",t:"sel",o:["Flow Measurement","Level Measurement","Filter \u0394P","Density Measurement","Interface Level"]},
+    {k:"fluid",l:"Process Fluid",t:"text"},{k:"rangeMin",l:"Range Min (mbar)",t:"num"},{k:"rangeMax",l:"Range Max (mbar)",t:"num"},
+    {k:"engUnit",l:"Eng. Unit",t:"text"},{k:"accuracy",l:"Accuracy (% of span)",t:"num"},
+    {k:"alarmH",l:"Alarm H (mbar)",t:"num"},{k:"alarmHH",l:"Alarm HH (mbar)",t:"num"},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wetMaterial",l:"Wetted Material",t:"text"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  turbidityTx:{label:"Turbidity Transmitters",color:"#14b8a6",prefix:"TU",summary:["principle","rangeMax","turbUnit","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service / Sample Point",t:"text"},
+    {k:"principle",l:"Measurement Principle",t:"sel",o:["Nephelometric (90\u00b0)","Scattered Light","Transmitted Light","Ratio Turbidimeter","Surface Scatter"]},
+    {k:"rangeMin",l:"Range Min",t:"num"},{k:"rangeMax",l:"Range Max",t:"num"},
+    {k:"turbUnit",l:"Measurement Unit",t:"sel",o:["NTU","FTU","FNU","mg/L","ppm"]},
+    {k:"accuracy",l:"Accuracy",t:"text"},{k:"installationType",l:"Installation",t:"sel",o:["Immersion","Flow-Through","In-line","Portable"]},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  levelSw:{label:"Level Switches",color:"#84cc16",prefix:"LS",summary:["switchFn","technology","setpoint","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service / Vessel",t:"text"},
+    {k:"switchFn",l:"Switch Function",t:"sel",o:["HH \u2014 High-High Level (LAHH)","H \u2014 High Level (LAH)","L \u2014 Low Level (LAL)","LL \u2014 Low-Low Level (LALL)"]},
+    {k:"technology",l:"Technology",t:"sel",o:["Float Switch","Vibrating Fork / Tuning Fork","Conductivity","Optical","Magnetic Float","Differential Pressure","Paddle / Rotary Paddle"]},
+    {k:"setpoint",l:"Setpoint (m)",t:"num"},{k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR","2-Wire NC","2-Wire NO"]},
+    {k:"supplyVoltage",l:"Supply Voltage",t:"text"},{k:"processConn",l:"Process Connection",t:"text"},
+    {k:"wetMaterial",l:"Wetted Material",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"atex",l:"Hazardous Area",t:"sel",o:["Non-Ex","ATEX Zone 0","ATEX Zone 1","ATEX Zone 2","IECEx"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  flowSw:{label:"Flow Switches",color:"#f97316",prefix:"FS",summary:["switchFn","technology","setpoint","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service / Pipeline",t:"text"},{k:"fluid",l:"Process Fluid",t:"text"},
+    {k:"switchFn",l:"Switch Function",t:"sel",o:["HH \u2014 High-High Flow (FAHH)","H \u2014 High Flow (FAH)","L \u2014 Low Flow (FAL)","LL \u2014 No / Zero Flow"]},
+    {k:"technology",l:"Technology",t:"sel",o:["Paddle / Flap","Piston / Spring","Thermal Dispersion","Ultrasonic","Differential Pressure"]},
+    {k:"lineSize",l:"Pipeline Size (DN)",t:"num"},{k:"setpoint",l:"Setpoint (m\u00b3/h or m/s)",t:"text"},
+    {k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wetMaterial",l:"Wetted Material",t:"text"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  pressureSw:{label:"Pressure Switches",color:"#f59e0b",prefix:"PS",summary:["switchFn","setpoint","outputType","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},{k:"fluid",l:"Process Fluid",t:"text"},
+    {k:"switchFn",l:"Switch Function",t:"sel",o:["HH \u2014 High-High Pressure (PAHH)","H \u2014 High Pressure (PAH)","L \u2014 Low Pressure (PAL)","LL \u2014 Low-Low Pressure (PALL)"]},
+    {k:"setpoint",l:"Setpoint (bar)",t:"num"},{k:"rangeMin",l:"Range Min (bar)",t:"num"},{k:"rangeMax",l:"Range Max (bar)",t:"num"},
+    {k:"hysteresis",l:"Hysteresis (bar)",t:"num"},{k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wetMaterial",l:"Wetted Material",t:"text"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
+  tempSw:{label:"Temperature Switches",color:"#ef4444",prefix:"TS",summary:["switchFn","setpoint","sensorType","ioTag","signalType"],fields:[
+    {k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},
+    {k:"switchFn",l:"Switch Function",t:"sel",o:["HH \u2014 High-High Temp (TAHH)","H \u2014 High Temp (TAH)","L \u2014 Low Temp (TAL)","LL \u2014 Low-Low Temp (TALL)"]},
+    {k:"setpoint",l:"Setpoint (\u00b0C)",t:"num"},{k:"rangeMin",l:"Range Min (\u00b0C)",t:"num"},{k:"rangeMax",l:"Range Max (\u00b0C)",t:"num"},
+    {k:"hysteresis",l:"Hysteresis (K)",t:"num"},{k:"sensorType",l:"Sensor Type",t:"sel",o:["Bimetal Disc","Vapour Pressure","RTD PT100","Thermocouple Type K","Thermocouple Type J","Solid State"]},
+    {k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN (Sinking)","PNP (Sourcing)","NAMUR"]},
+    {k:"processConn",l:"Process Connection",t:"text"},{k:"wellLength",l:"Thermowell Length (mm)",t:"num"},
+    {k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
+    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
+    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
+    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
+  ]},
 };
-
-const IAC_DEF=Object.fromEntries(
-  Object.entries(IAC_BASE).map(([k,def])=>[k,{...def,fields:[...def.fields,...IO_FIELDS]}])
-);
+const IAC_DEF=Object.fromEntries(Object.entries(IAC_BASE).map(([k,d])=>[k,{...d,fields:[...d.fields,...IO_FIELDS]}]));
 
 const MECH_KEYS=Object.keys(MECH_DEF);
 const IAC_KEYS=Object.keys(IAC_DEF);
 
-/* ─── Custom type templates ─── */
 const TPL_FIELDS={
-  transmitter:[
-    {k:"description",l:"Description",t:"text",req:true},{k:"area",l:"Area Code",t:"text"},{k:"pidRef",l:"P&ID Reference",t:"text"},
-    {k:"service",l:"Service",t:"text"},{k:"fluid",l:"Process Fluid",t:"text"},
-    {k:"rangeMin",l:"Range Min",t:"num"},{k:"rangeMax",l:"Range Max",t:"num"},{k:"engUnit",l:"Eng. Unit",t:"text"},
-    {k:"accuracy",l:"Accuracy",t:"text"},{k:"alarmL",l:"Alarm L",t:"num"},{k:"alarmH",l:"Alarm H",t:"num"},
-    {k:"processConn",l:"Process Connection",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
-    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
-    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
-  ],
-  switch:[
-    {k:"description",l:"Description",t:"text",req:true},{k:"area",l:"Area Code",t:"text"},{k:"pidRef",l:"P&ID Reference",t:"text"},
-    {k:"service",l:"Service",t:"text"},{k:"switchFn",l:"Switch Function",t:"sel",o:["HH","H","L","LL"]},
-    {k:"setpoint",l:"Setpoint",t:"text"},{k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN","PNP","NAMUR"]},
-    {k:"processConn",l:"Process Connection",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},
-    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
-    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
-    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
-  ],
-  mechanical:[
-    {k:"description",l:"Description",t:"text",req:true},{k:"area",l:"Area Code",t:"text"},{k:"pidRef",l:"P&ID Reference",t:"text"},
-    {k:"service",l:"Service",t:"text"},{k:"fluid",l:"Fluid / Medium",t:"text"},
-    {k:"specification",l:"Technical Spec",t:"text"},{k:"material",l:"Material",t:"text"},
-    {k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},
-    {k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},
-    {k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"},
-  ],
+  transmitter:[{k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},{k:"rangeMin",l:"Range Min",t:"num"},{k:"rangeMax",l:"Range Max",t:"num"},{k:"engUnit",l:"Eng. Unit",t:"text"},{k:"accuracy",l:"Accuracy",t:"text"},{k:"processConn",l:"Process Connection",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},{k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},{k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},{k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"}],
+  switch:[{k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},{k:"switchFn",l:"Switch Function",t:"sel",o:["HH","H","L","LL"]},{k:"setpoint",l:"Setpoint",t:"text"},{k:"outputType",l:"Output Type",t:"sel",o:["SPDT Relay","DPDT Relay","NPN","PNP","NAMUR"]},{k:"processConn",l:"Process Connection",t:"text"},{k:"ipRating",l:"IP Rating",t:"sel",o:["IP54","IP65","IP66","IP67","IP68"]},{k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},{k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},{k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"}],
+  mechanical:[{k:"description",l:"Description",t:"text",req:true},{k:"service",l:"Service",t:"text"},{k:"specification",l:"Technical Spec",t:"text"},{k:"material",l:"Material",t:"text"},{k:"manufacturer",l:"Manufacturer",t:"text"},{k:"model",l:"Model",t:"text"},{k:"serialNumber",l:"Serial Number",t:"text"},{k:"location",l:"Physical Location",t:"text"},{k:"status",l:"Status",t:"sel",o:["Active","Standby","Maintenance","Decommissioned","Spare"]},{k:"notes",l:"Notes",t:"area"}],
 };
 
-/* ─── Helpers ─── */
-const MK_CTR_TYPES={motor:["VFD (Variable Frequency Drive)","Soft Starter","Direct On Load (DOL)","Star-Delta Starter","None"],
-  valve:["Electric Actuator Controller","Pneumatic Positioner / I/P","None"],
-  solenoid:["Solenoid Driver / Relay","None"]};
+/* Tag helpers */
+const mkInstanceTag=(tag,area)=>tag&&area?`${tag}-${area}`:tag||"";
+const mkSignalTag=(tag,area,code)=>code?`${mkInstanceTag(tag,area)}-${code}`:"";
 
-const fullTag=(tag,area,code)=>`${tag||"???"}${area?"-"+area:""}${code?"-"+code:""}`;
-
-const S=(e={})=>({background:BG,border:`1px solid ${BDR2}`,borderRadius:7,padding:"7px 11px",
-  color:TXT,fontSize:13,width:"100%",fontFamily:"inherit",outline:"none",...e});
-
+/* ═══════════════ HELPERS ═══════════════ */
+const S=(e={})=>({background:BG,border:`1px solid ${BDR2}`,borderRadius:7,padding:"7px 10px",color:TXT,fontSize:13,width:"100%",fontFamily:"inherit",outline:"none",...e});
 function Dot({color,size=8}){return <span style={{width:size,height:size,borderRadius:"50%",background:color,display:"inline-block",flexShrink:0}}/>;}
 function Badge({label,color,bg}){return <span style={{background:bg,color,fontSize:10,padding:"3px 8px",borderRadius:5,fontWeight:600,whiteSpace:"nowrap"}}>{label}</span>;}
 
-function FieldInput({f,val,err,onChange}){
-  const style=S({border:`1px solid ${err?DNG:BDR2}`});
-  return(<div>
-    <label style={{fontSize:10,color:err?DNG:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:4,fontWeight:600}}>{f.l}{f.req?" *":""}</label>
-    {f.t==="sel"?<select value={val} onChange={e=>onChange(e.target.value)} style={{...style,cursor:"pointer"}}><option value="">— Select —</option>{f.o.map(o=><option key={o} value={o}>{o}</option>)}</select>
-    :f.t==="area"?<textarea value={val} onChange={e=>onChange(e.target.value)} rows={3} style={{...style,resize:"vertical"}}/>
-    :<input type={f.t==="num"?"number":"text"} value={val} onChange={e=>onChange(e.target.value)} style={style}/>}
-    {err&&<p style={{color:DNG,fontSize:11,marginTop:4}}>{err}</p>}
+function FI({f,val,err,onChange}){
+  const st=S({border:`1px solid ${err?DNG:BDR2}`});
+  return(<div><label style={{fontSize:10,color:err?DNG:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:3,fontWeight:600}}>{f.l}{f.req?" *":""}</label>
+    {f.t==="sel"?<select value={val} onChange={e=>onChange(e.target.value)} style={{...st,cursor:"pointer"}}><option value="">\u2014 Select \u2014</option>{f.o.map(o=><option key={o} value={o}>{o}</option>)}</select>
+    :f.t==="area"?<textarea value={val} onChange={e=>onChange(e.target.value)} rows={3} style={{...st,resize:"vertical"}}/>
+    :<input type={f.t==="num"?"number":"text"} value={val} onChange={e=>onChange(e.target.value)} placeholder={f.ph||""} style={st}/>}
+    {err&&<p style={{color:DNG,fontSize:11,marginTop:3}}>{err}</p>}
   </div>);
 }
 
 function NavItem({label,active,color,count,onClick,indent=false,italic=false}){
   const[h,sH]=useState(false);
   return(<button onClick={onClick} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)}
-    style={{width:"100%",textAlign:"left",background:active?`${color}14`:h?CRD:"transparent",border:"none",borderLeft:`3px solid ${active?color:"transparent"}`,
-      padding:`8px 13px 8px ${indent?22:13}px`,color:active?color:h?MUT:DIM,fontSize:11,fontWeight:active?600:400,
-      display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",fontFamily:"inherit",fontStyle:italic?"italic":"normal"}}>
+    style={{width:"100%",textAlign:"left",background:active?`${color}14`:h?CRD:"transparent",border:"none",borderLeft:`3px solid ${active?color:"transparent"}`,padding:`8px 13px 8px ${indent?22:13}px`,color:active?color:h?MUT:DIM,fontSize:11,fontWeight:active?600:400,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",fontFamily:"inherit",fontStyle:italic?"italic":"normal"}}>
     <span>{label}</span>
     {count>0&&<span style={{background:active?`${color}25`:BDR,color:active?color:DIM,fontSize:10,padding:"1px 6px",borderRadius:10,fontWeight:700,fontFamily:"monospace"}}>{count}</span>}
   </button>);
 }
-function SecLabel({label,color}){
-  return(<div style={{padding:"9px 13px 3px",fontSize:9,color,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,marginTop:4,display:"flex",alignItems:"center",gap:6}}>
-    <span style={{flex:1,height:1,background:`${color}30`}}/>{label}<span style={{flex:1,height:1,background:`${color}30`}}/>
-  </div>);
-}
-function DeptIO({color,onImport,onExport,fileRef}){
-  return(<div style={{display:"flex",gap:6}}>
-    <input type="file" accept=".xlsx,.xls" ref={fileRef} onChange={onImport} style={{display:"none"}}/>
-    <button onClick={()=>fileRef.current.click()} style={{background:CRD,border:`1px solid ${color}44`,borderRadius:7,padding:"5px 10px",color,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit",fontWeight:500}}><Upload size={11}/> Import</button>
-    <button onClick={onExport} style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:7,padding:"5px 10px",color,fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit"}}><Download size={11}/> Export</button>
-  </div>);
-}
+function SecLabel({label,color}){return(<div style={{padding:"8px 13px 3px",fontSize:9,color,textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:700,marginTop:4,display:"flex",alignItems:"center",gap:6}}><span style={{flex:1,height:1,background:`${color}30`}}/>{label}<span style={{flex:1,height:1,background:`${color}30`}}/></div>);}
+function DeptIO({color,onImport,onExport,fileRef}){return(<div style={{display:"flex",gap:6}}><input type="file" accept=".xlsx,.xls" ref={fileRef} onChange={onImport} style={{display:"none"}}/><button onClick={()=>fileRef.current.click()} style={{background:CRD,border:`1px solid ${color}44`,borderRadius:7,padding:"5px 10px",color,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit",fontWeight:500}}><Upload size={11}/>Import</button><button onClick={onExport} style={{background:`${color}22`,border:`1px solid ${color}55`,borderRadius:7,padding:"5px 10px",color,fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit"}}><Download size={11}/>Export</button></div>);}
 
-/* ─── Probes Panel ─── */
-function ProbesPanel({probes,setProbes,tagName,area}){
-  const add=()=>setProbes(p=>[...p,{id:Date.now(),type:"",position:"",sensorType:"",code:""}]);
-  const remove=id=>setProbes(p=>p.filter(x=>x.id!==id));
-  const upd=(id,k,v)=>setProbes(p=>p.map(x=>x.id===id?{...x,[k]:v}:x));
-  const getSensors=type=>(PROBE_CATALOGUE.find(c=>c.type===type)?.sensors||[]);
+/* ═══════════════ PROBES SUB-PANEL ═══════════════ */
+function ProbesPanel({probes,onChange}){
+  const addProbe=()=>{
+    const id="p"+Date.now();
+    const type="Vibration Sensor";
+    const def=PROBE_TYPES[type];
+    onChange([...probes,{id,type,position:"",sensorType:def.sensors[0],code:"",sig:def.sig,ioTag:"",plcCabinet:"",ioChannel:""}]);
+  };
+  const updateProbe=(id,k,v)=>onChange(probes.map(p=>p.id===id?{...p,[k]:v}:p));
+  const removeProbe=(id)=>onChange(probes.filter(p=>p.id!==id));
   return(<div>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-      <div>
-        <p style={{color:TXT,fontSize:13,fontWeight:600}}>Machine Probes</p>
-        <p style={{color:DIM,fontSize:11}}>Defined here — will appear in I&C Probes section for IO assignment</p>
-      </div>
-      <button onClick={add} style={{background:MC,border:"none",borderRadius:7,padding:"6px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
-        <Plus size={12}/> Add Probe
-      </button>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+      <span style={{color:MUT,fontSize:12,fontWeight:600}}>Probes attached to this equipment</span>
+      <button onClick={addProbe} style={{background:SUC,border:"none",borderRadius:6,padding:"5px 11px",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}><Plus size={11}/>Add Probe</button>
     </div>
-    {probes.length===0&&<div style={{textAlign:"center",padding:"24px",color:DIM,border:`1px dashed ${BDR2}`,borderRadius:8,fontSize:13}}>No probes added yet — click + Add Probe</div>}
-    {probes.map((p,i)=>(
-      <div key={p.id} style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:9,padding:14,marginBottom:8}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <span style={{color:MUT,fontSize:11,fontFamily:"monospace"}}>Probe #{i+1}</span>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            {p.code&&p.code.length===4&&<span style={{color:ACC,fontSize:10,fontFamily:"monospace",background:`${ACC}18`,padding:"2px 7px",borderRadius:4}}>{fullTag(tagName,area,p.code)}</span>}
-            <button onClick={()=>remove(p.id)} style={{background:"transparent",border:`1px solid ${DNG}40`,borderRadius:5,padding:"3px 8px",color:DNG,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}><Trash2 size={11}/></button>
-          </div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 80px",gap:8}}>
+    {probes.length===0&&<div style={{textAlign:"center",padding:"20px",color:DIM,fontSize:12,border:`1px dashed ${BDR2}`,borderRadius:8}}>No probes defined. Click "+ Add Probe" to start.</div>}
+    {probes.map((p,i)=>{
+      const def=PROBE_TYPES[p.type]||{sig:"AI",sensors:[]};
+      return(<div key={p.id} style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:9,padding:14,marginBottom:8,position:"relative"}}>
+        <button onClick={()=>removeProbe(p.id)} style={{position:"absolute",top:8,right:8,background:"transparent",border:"none",color:DIM,cursor:"pointer",fontSize:14,lineHeight:1}}><X size={13}/></button>
+        <div style={{color:ACC,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Probe #{i+1}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
           <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Probe Type</label>
-            <select value={p.type} onChange={e=>upd(p.id,"type",e.target.value)} style={S({cursor:"pointer"})}>
-              <option value="">— Select —</option>
-              {PROBE_CATALOGUE.map(c=><option key={c.type} value={c.type}>{c.type}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Position</label>
-            <select value={p.position} onChange={e=>upd(p.id,"position",e.target.value)} style={S({cursor:"pointer"})}>
-              <option value="">— Select —</option>
-              {PROBE_POSITIONS.map(pos=><option key={pos} value={pos}>{pos}</option>)}
+            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Type</label>
+            <select value={p.type} onChange={e=>{const t=e.target.value;const d=PROBE_TYPES[t]||{sig:"AI",sensors:[]};updateProbe(p.id,"type",t);updateProbe(p.id,"sensorType",d.sensors[0]||"");updateProbe(p.id,"sig",d.sig);}}
+              style={S({cursor:"pointer"})}>
+              {Object.keys(PROBE_TYPES).map(t=><option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
             <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Sensor Type</label>
-            <select value={p.sensorType} onChange={e=>upd(p.id,"sensorType",e.target.value)} style={S({cursor:"pointer"})}>
-              <option value="">— Select —</option>
-              {getSensors(p.type).map(s=><option key={s} value={s}>{s}</option>)}
+            <select value={p.sensorType} onChange={e=>updateProbe(p.id,"sensorType",e.target.value)} style={S({cursor:"pointer"})}>
+              {def.sensors.map(s=><option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label style={{fontSize:10,color:ACC,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:700}}>Code (4)</label>
-            <input value={p.code} maxLength={4} onChange={e=>upd(p.id,"code",e.target.value.toUpperCase())}
-              placeholder="VIB1" style={S({fontFamily:"monospace",fontWeight:700,color:ACC,border:`1px solid ${ACC}44`,textAlign:"center",padding:"7px 4px"})}/>
+            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Position / Location</label>
+            <input value={p.position} onChange={e=>updateProbe(p.id,"position",e.target.value)} placeholder="e.g. Drive End, Coil A" style={S()}/>
+          </div>
+          <div>
+            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Signal Code (max 4 char) *</label>
+            <input value={p.code} onChange={e=>updateProbe(p.id,"code",e.target.value.toUpperCase().slice(0,4))} placeholder="e.g. VIB1" style={S({fontFamily:"monospace",fontWeight:700,color:ACC})}/>
+          </div>
+          <div>
+            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Signal Type</label>
+            <select value={p.sig} onChange={e=>updateProbe(p.id,"sig",e.target.value)} style={S({cursor:"pointer"})}>
+              {["AI","AO","DI","DO"].map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Generated Tag</label>
+            <div style={{background:SRF,border:`1px solid ${BDR}`,borderRadius:7,padding:"7px 10px",fontSize:12,color:p.code?ACC:DIM,fontFamily:"monospace",fontWeight:600}}>
+              {p.code?"[TAG]-[AREA]-"+p.code:"(set code)"}
+            </div>
           </div>
         </div>
-      </div>
-    ))}
+        <div style={{marginTop:8}}>
+          <label style={{fontSize:9,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:2,fontWeight:600}}>I&C IO Assignment (filled by I&C department)</label>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+            <input value={p.ioTag||""} onChange={e=>updateProbe(p.id,"ioTag",e.target.value)} placeholder="IO Tag" style={S({fontSize:11,color:ACC})}/>
+            <input value={p.plcCabinet||""} onChange={e=>updateProbe(p.id,"plcCabinet",e.target.value)} placeholder="Cabinet / PLC" style={S({fontSize:11})}/>
+            <input value={p.ioChannel||""} onChange={e=>updateProbe(p.id,"ioChannel",e.target.value)} placeholder="Channel Address" style={S({fontSize:11,fontFamily:"monospace"})}/>
+          </div>
+        </div>
+      </div>);
+    })}
   </div>);
 }
 
-/* ─── Controller + Variants Panel ─── */
-function ControllerPanel({typeKey,form,onChange}){
-  const variantsList=typeKey==="motor"?MOTOR_VARIANTS:typeKey==="valve"?VALVE_VARIANTS:SOL_VARIANTS;
-  const ctrlTypes=MK_CTR_TYPES[typeKey]||["None"];
-  const ctrl=form.controller||{};
+/* ═══════════════ CONTROLLER + IO SIGNALS PANEL ═══════════════ */
+function ControllerPanel({equipKey,tag,area,form,onChange}){
+  const options=CTRL_OPTIONS[equipKey]||[];
+  if(!options.length)return null;
+  const ctrl=form.controller||{type:"None",brand:"",model:"",commProtocol:""};
   const sigs=form.signals||{};
-  const cats=[...new Set(variantsList.map(v=>v.cat))];
-  const CAT_COLORS={"Feedback":"#10b981","Command":"#0ea5e9","Analog SP":"#f59e0b","Analog FB":"#06b6d4"};
-  const updCtrl=(k,v)=>onChange("controller",{...ctrl,[k]:v});
-  const updSig=(id,k,v)=>onChange("signals",{...sigs,[id]:{...sigs[id]||{},[k]:v}});
-  const getSig=v=>({enabled:false,code:v.code,signalType:v.sigT,commMethod:"Hardwired",protocol:"",...(sigs[v.id]||{})});
-  const enabledCount=variantsList.filter(v=>getSig(v).enabled).length;
+  const variants=CV[ctrl.type]||[];
+  const setCtrl=(k,v)=>{
+    const nc={...ctrl,[k]:v};
+    onChange("controller",nc);
+    if(k==="type")onChange("signals",{});
+  };
+  const setSig=(id,k,v)=>{const ns={...sigs,[id]:{...(sigs[id]||{}),code:(sigs[id]||{}).code||id,[k]:v}};onChange("signals",ns);};
+  const toggleSig=(id,def)=>{
+    const cur=sigs[id]||{code:id,signalType:def.sig,enabled:false,connMethod:"Hardwired",protocol:""};
+    setSig(id,"enabled",!cur.enabled);
+    if(!sigs[id])setSig(id,"code",id);
+    if(!sigs[id])setSig(id,"signalType",def.sig);
+  };
+  const instTag=mkInstanceTag(tag,area);
   return(<div>
-    {/* Controller section */}
-    <div style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:10,padding:16,marginBottom:16}}>
-      <p style={{color:TXT,fontSize:13,fontWeight:600,marginBottom:12}}>
-        {typeKey==="motor"?"Motor Controller":"Actuator Controller"}
-      </p>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
-        <div style={{gridColumn:"span 2"}}>
-          <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>Controller Type</label>
-          <select value={ctrl.type||""} onChange={e=>updCtrl("type",e.target.value)} style={S({cursor:"pointer"})}>
-            <option value="">— Select —</option>
-            {ctrlTypes.map(t=><option key={t} value={t}>{t}</option>)}
+    {/* Controller definition */}
+    <div style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:9,padding:14,marginBottom:14}}>
+      <div style={{color:MUT,fontSize:11,fontWeight:600,marginBottom:10,display:"flex",alignItems:"center",gap:6}}><Settings size={13}/>Controller Definition</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+        <div>
+          <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Controller Type</label>
+          <select value={ctrl.type||"None"} onChange={e=>setCtrl("type",e.target.value)} style={S({cursor:"pointer"})}>
+            {options.map(o=><option key={o} value={o}>{CTRL_LABEL[o]||o}</option>)}
           </select>
         </div>
-        {ctrl.type&&ctrl.type!=="None"&&<>
-          <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>Brand</label>
-            <input value={ctrl.brand||""} onChange={e=>updCtrl("brand",e.target.value)} style={S()}/>
-          </div>
-          <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>Model</label>
-            <input value={ctrl.model||""} onChange={e=>updCtrl("model",e.target.value)} style={S()}/>
-          </div>
-          <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>IP Rating</label>
-            <select value={ctrl.ipRating||""} onChange={e=>updCtrl("ipRating",e.target.value)} style={S({cursor:"pointer"})}>
-              <option value="">— Select —</option>
-              {["IP21","IP31","IP41","IP42","IP54","IP55","IP65","IP66","IP67","IP68"].map(r=><option key={r} value={r}>{r}</option>)}
+        {ctrl.type!=="None"&&ctrl.type&&<>
+          <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Brand</label><input value={ctrl.brand||""} onChange={e=>setCtrl("brand",e.target.value)} placeholder="e.g. ABB, Siemens" style={S()}/></div>
+          <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Model</label><input value={ctrl.model||""} onChange={e=>setCtrl("model",e.target.value)} placeholder="e.g. ACS880, G120" style={S()}/></div>
+          <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:3,fontWeight:600}}>Communication Protocol</label>
+            <select value={ctrl.commProtocol||""} onChange={e=>setCtrl("commProtocol",e.target.value)} style={S({cursor:"pointer"})}>
+              <option value="">\u2014 Select \u2014</option>{PROTOCOLS.map(p=><option key={p} value={p}>{p}</option>)}
             </select>
-          </div>
-          <div>
-            <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>Cabinet / Location</label>
-            <input value={ctrl.cabinet||""} onChange={e=>updCtrl("cabinet",e.target.value)} style={S()}/>
           </div>
         </>}
       </div>
     </div>
 
     {/* IO Signals / Variants */}
-    <div style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:10,padding:16}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-        <p style={{color:TXT,fontSize:13,fontWeight:600}}>IO Signals / Variants</p>
-        <span style={{color:ACC,fontSize:11}}>{enabledCount} selected</span>
+    {ctrl.type&&ctrl.type!=="None"&&variants.length>0&&<div>
+      <div style={{color:MUT,fontSize:11,fontWeight:600,marginBottom:8,display:"flex",alignItems:"center",gap:6}}><Zap size={13}/>IO Signals \u2014 Variants <span style={{color:DIM,fontSize:10,fontWeight:400}}>({variants.filter(v=>(sigs[v.id]||{}).enabled).length} of {variants.length} enabled)</span></div>
+      
+      {/* Header */}
+      <div style={{display:"grid",gridTemplateColumns:"30px 1fr 70px 50px 100px 1fr 200px",gap:6,padding:"5px 8px",background:SRF,borderRadius:"7px 7px 0 0",borderBottom:`1px solid ${BDR}`}}>
+        {["","Signal Name","Code","Type","Wiring","Protocol","Generated Tag"].map((h,i)=><div key={i} style={{fontSize:9,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>{h}</div>)}
       </div>
-      {cats.map(cat=>(
-        <div key={cat} style={{marginBottom:14}}>
-          <div style={{fontSize:9,color:CAT_COLORS[cat]||DIM,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
-            <span style={{flex:1,height:1,background:`${CAT_COLORS[cat]||DIM}30`}}/>{cat}<span style={{flex:1,height:1,background:`${CAT_COLORS[cat]||DIM}30`}}/>
-          </div>
-          {variantsList.filter(v=>v.cat===cat).map(v=>{
-            const sig=getSig(v);
-            const ftag=fullTag(form.tagName,form.area,sig.code);
-            return(
-              <div key={v.id} style={{marginBottom:6,padding:"8px 10px",background:sig.enabled?`${CAT_COLORS[cat]||ACC}0a`:BG,border:`1px solid ${sig.enabled?CAT_COLORS[cat]||ACC:BDR2}`,borderRadius:7}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:sig.enabled?8:0}}>
-                  <input type="checkbox" checked={sig.enabled} onChange={e=>updSig(v.id,"enabled",e.target.checked)}
-                    style={{width:14,height:14,accentColor:CAT_COLORS[cat]||ACC,cursor:"pointer"}}/>
-                  <span style={{color:sig.enabled?TXT:MUT,fontSize:12,fontWeight:sig.enabled?500:400,flex:1}}>{v.name}</span>
-                  <Badge label={v.sigT} color={SIGC[v.sigT]||MUT} bg={`${SIGC[v.sigT]||MUT}20`}/>
-                </div>
-                {sig.enabled&&(
-                  <div style={{display:"grid",gridTemplateColumns:"80px 100px 1fr auto",gap:6,paddingLeft:22}}>
-                    <div>
-                      <label style={{fontSize:9,color:ACC,display:"block",marginBottom:2,fontWeight:700,textTransform:"uppercase"}}>Code (4)</label>
-                      <input value={sig.code} maxLength={4} onChange={e=>updSig(v.id,"code",e.target.value.toUpperCase())}
-                        style={S({fontFamily:"monospace",fontWeight:700,color:ACC,border:`1px solid ${ACC}55`,textAlign:"center",padding:"5px 4px",fontSize:13})}/>
-                    </div>
-                    <div>
-                      <label style={{fontSize:9,color:DIM,display:"block",marginBottom:2,fontWeight:600,textTransform:"uppercase"}}>Signal Type</label>
-                      <select value={sig.signalType} onChange={e=>updSig(v.id,"signalType",e.target.value)} style={S({cursor:"pointer",padding:"5px 7px"})}>
-                        {["DI","DO","AI","AO"].map(s=><option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{fontSize:9,color:DIM,display:"block",marginBottom:2,fontWeight:600,textTransform:"uppercase"}}>Connection</label>
-                      <select value={sig.commMethod} onChange={e=>updSig(v.id,"commMethod",e.target.value)} style={S({cursor:"pointer",padding:"5px 7px"})}>
-                        {PROTOCOLS.map(p=><option key={p} value={p}>{p}</option>)}
-                      </select>
-                    </div>
-                    <div style={{paddingTop:16}}>
-                      <span style={{fontSize:10,color:ACC,fontFamily:"monospace"}}>{ftag}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
+      
+      {variants.map(vd=>{
+        const sv=sigs[vd.id]||{};
+        const enabled=sv.enabled||false;
+        const code=sv.code||vd.id;
+        const sigType=sv.signalType||vd.sig;
+        const connMethod=sv.connMethod||"Hardwired";
+        const protocol=sv.protocol||"";
+        const sc=SIGC[sigType]||MUT;
+        const fullTag=enabled&&code?mkSignalTag(tag,area,code):"";
+        return(<div key={vd.id} style={{display:"grid",gridTemplateColumns:"30px 1fr 70px 50px 100px 1fr 200px",gap:6,padding:"6px 8px",borderBottom:`1px solid ${BDR}`,background:enabled?`${sc}08`:"transparent",alignItems:"center"}}>
+          <input type="checkbox" checked={enabled} onChange={()=>toggleSig(vd.id,vd)} style={{cursor:"pointer",accentColor:sc}}/>
+          <span style={{fontSize:12,color:enabled?TXT:DIM}}>{vd.label}</span>
+          <input value={code} onChange={e=>{if(enabled)setSig(vd.id,"code",e.target.value.toUpperCase().slice(0,4));}} disabled={!enabled}
+            style={{background:enabled?BG:"transparent",border:`1px solid ${enabled?BDR2:"transparent"}`,borderRadius:5,padding:"3px 6px",color:enabled?ACC:DIM,fontSize:11,fontFamily:"monospace",fontWeight:700,outline:"none",width:"100%"}}/>
+          <select value={sigType} onChange={e=>{if(enabled)setSig(vd.id,"signalType",e.target.value);}} disabled={!enabled}
+            style={{background:enabled?BG:"transparent",border:`1px solid ${enabled?BDR2:"transparent"}`,borderRadius:5,padding:"3px 4px",color:enabled?sc:DIM,fontSize:11,outline:"none",cursor:enabled?"pointer":"default"}}>
+            {["AI","AO","DI","DO"].map(s=><option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={connMethod} onChange={e=>{if(enabled)setSig(vd.id,"connMethod",e.target.value);}} disabled={!enabled}
+            style={{background:enabled?BG:"transparent",border:`1px solid ${enabled?BDR2:"transparent"}`,borderRadius:5,padding:"3px 4px",color:enabled?TXT:DIM,fontSize:10,outline:"none",cursor:enabled?"pointer":"default"}}>
+            <option value="Hardwired">Hardwired</option><option value="Communication">Comms</option>
+          </select>
+          {connMethod==="Communication"&&enabled
+            ?<select value={protocol} onChange={e=>setSig(vd.id,"protocol",e.target.value)} style={{background:BG,border:`1px solid ${BDR2}`,borderRadius:5,padding:"3px 4px",color:TXT,fontSize:10,outline:"none",cursor:"pointer"}}>
+                <option value="">\u2014 Protocol \u2014</option>{PROTOCOLS.filter(p=>p!=="Hardwired").map(p=><option key={p} value={p}>{p}</option>)}
+              </select>
+            :<span style={{fontSize:10,color:DIM}}>{connMethod==="Communication"?"\u2014 set protocol":"Hardwired"}</span>}
+          <span style={{fontSize:10,color:fullTag?ACC:DIM,fontFamily:"monospace",fontWeight:fullTag?600:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fullTag||"\u2014"}</span>
+        </div>);
+      })}
+    </div>}
   </div>);
 }
 
-/* ─── Tabbed Item Modal ─── */
-function ItemModal({def,typeKey,dept,modal,form,errs,onChange,onSave,onClose}){
+/* ═══════════════ MODAL ═══════════════ */
+function ItemModal({def,equipKey,dept,modal,form,errs,onChange,onSave,onClose}){
   const color=def?.color||ACC;
-  const hasTabs=dept==="mech"&&["pump","motor","valve","solenoid"].includes(typeKey);
-  const tabs=[];
-  if(hasTabs){
-    tabs.push("general");
-    if(typeKey==="pump"||typeKey==="motor") tabs.push("probes");
-    if(typeKey==="motor"||typeKey==="valve"||typeKey==="solenoid") tabs.push("controller");
-  }
-  const[tab,setTab]=useState("general");
-
-  const updateProbes=v=>onChange("probes",v);
-  const updateCtrl=(k,v)=>onChange(k,v);
-  const instanceTag=fullTag(form.tagName,form.area,"");
-  const TAB_LABELS={general:"General",probes:"Probes",controller:"Controller & IO Signals"};
-
+  const hasProbes=["pump","motor"].includes(equipKey);
+  const hasController=["motor","valve","solenoid"].includes(equipKey);
+  const tabs=["General",...(hasProbes?["Probes"]:[]),(hasController?["Controller"]:[])].flat();
+  const[tab,setTab]=useState("General");
+  const tag=form.tagName||"";const area=form.area||"";
+  const instTag=mkInstanceTag(tag,area);
+  const probes=form.probes||[];
   return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.72)",display:"flex",alignItems:"stretch",justifyContent:"flex-end",zIndex:400}} onClick={onClose}>
-    <div style={{background:SRF,width:720,maxWidth:"96vw",overflowY:"auto",borderLeft:`3px solid ${color}`,display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+    <div style={{background:SRF,width:tabs.length>1?820:700,maxWidth:"97vw",overflowY:"auto",borderLeft:`3px solid ${color}`,padding:22,display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+      
       {/* Modal header */}
-      <div style={{padding:"18px 22px 0",flexShrink:0}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-              <Dot color={color} size={10}/>
-              <h2 style={{fontFamily:"monospace",fontWeight:700,fontSize:16,color}}>{modal.mode==="add"?`New ${def?.label?.replace(/s$/,"")}`:`Edit ${form.tagName}`}</h2>
-            </div>
-            <div style={{display:"flex",gap:12,fontSize:10,color:DIM}}>
-              <span>Prefix: <span style={{color:MUT,fontFamily:"monospace"}}>{def?.prefix}-XXX</span></span>
-              {form.tagName&&form.area&&<span>Instance tag: <span style={{color:ACC,fontFamily:"monospace"}}>{instanceTag.replace(/-$/,"")}</span></span>}
-            </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+            <Dot color={color} size={10}/>
+            <h2 style={{fontFamily:"monospace",fontWeight:700,fontSize:16,color}}>{modal.mode==="add"?`New ${def?.label?.replace(/s$/,"")}`:`Edit ${form.tagName}`}</h2>
+            <span style={{fontSize:10,color:dept==="mech"?MC:IC,background:dept==="mech"?`${MC}18`:`${IC}18`,padding:"2px 8px",borderRadius:5,fontWeight:600}}>{dept==="mech"?"MECHANICS":"I&C"}</span>
           </div>
-          <button onClick={onClose} style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:7,padding:"5px 9px",color:MUT,cursor:"pointer",display:"flex",alignItems:"center"}}><X size={14}/></button>
+          {instTag&&<div style={{fontFamily:"monospace",fontSize:11,color:ACC,background:`${ACC}10`,padding:"3px 10px",borderRadius:5,display:"inline-block"}}>Instance Tag: <strong>{instTag}</strong></div>}
         </div>
-
-        {/* Tag Name always visible */}
-        <div style={{background:CRD,border:`1px solid ${color}44`,borderRadius:8,padding:13,marginBottom:hasTabs?0:14}}>
-          <label style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:5,fontWeight:600}}>Tag Name *</label>
-          <input value={form.tagName||""} onChange={e=>onChange("tagName",e.target.value.toUpperCase())}
-            placeholder={`e.g. ${def?.prefix}-001`}
-            style={{width:"100%",background:SRF,border:`1px solid ${errs.tagName?DNG:BDR2}`,borderRadius:6,padding:"8px 12px",color:TXT,fontSize:14,fontFamily:"monospace",fontWeight:700,outline:"none"}}/>
-          {errs.tagName&&<p style={{color:DNG,fontSize:11,marginTop:4}}>{errs.tagName}</p>}
-        </div>
-
-        {/* Tabs */}
-        {hasTabs&&(
-          <div style={{display:"flex",gap:2,marginTop:12,borderBottom:`1px solid ${BDR}`}}>
-            {tabs.map(t=>(
-              <button key={t} onClick={()=>setTab(t)}
-                style={{background:"none",border:"none",borderBottom:`2px solid ${tab===t?color:"transparent"}`,padding:"8px 14px",color:tab===t?color:DIM,fontSize:12,fontWeight:tab===t?600:400,cursor:"pointer",fontFamily:"inherit",marginBottom:-1}}>
-                {TAB_LABELS[t]}
-              </button>
-            ))}
-          </div>
-        )}
+        <button onClick={onClose} style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:7,padding:"5px 9px",color:MUT,cursor:"pointer",display:"flex",alignItems:"center"}}><X size={14}/></button>
       </div>
 
-      {/* Modal body */}
-      <div style={{flex:1,overflowY:"auto",padding:"16px 22px"}}>
-        {(!hasTabs||tab==="general")&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
-            {def?.fields?.map(f=>(
-              <div key={f.k} style={{gridColumn:f.t==="area"?"span 2":"span 1"}}>
-                <FieldInput f={f} val={form[f.k]||""} err={errs[f.k]} onChange={v=>onChange(f.k,v)}/>
-              </div>
-            ))}
-          </div>
-        )}
-        {hasTabs&&tab==="probes"&&(
-          <ProbesPanel probes={form.probes||[]} setProbes={updateProbes} tagName={form.tagName} area={form.area}/>
-        )}
-        {hasTabs&&tab==="controller"&&(
-          <ControllerPanel typeKey={typeKey} form={form} onChange={updateCtrl}/>
-        )}
+      {/* Tag Name + Area + P&ID (always visible at top) */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,background:CRD,border:`1px solid ${color}44`,borderRadius:8,padding:13,marginBottom:14}}>
+        <div>
+          <label style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:4,fontWeight:600}}>Tag Name *</label>
+          <input value={form.tagName||""} onChange={e=>onChange("tagName",e.target.value.toUpperCase())} placeholder={`e.g. ${def?.prefix}-001`}
+            style={{width:"100%",background:SRF,border:`1px solid ${errs.tagName?DNG:BDR2}`,borderRadius:6,padding:"7px 11px",color:TXT,fontSize:14,fontFamily:"monospace",fontWeight:700,outline:"none"}}/>
+          {errs.tagName&&<p style={{color:DNG,fontSize:11,marginTop:3}}>{errs.tagName}</p>}
+        </div>
+        <div>
+          <label style={{fontSize:10,color:MUT,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:4,fontWeight:600}}>Area Code</label>
+          <input value={form.area||""} onChange={e=>onChange("area",e.target.value.toUpperCase())} placeholder="e.g. IN001"
+            style={{width:"100%",background:SRF,border:`1px solid ${BDR2}`,borderRadius:6,padding:"7px 11px",color:TXT,fontSize:13,fontFamily:"monospace",fontWeight:600,outline:"none"}}/>
+        </div>
+        <div>
+          <label style={{fontSize:10,color:MUT,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:4,fontWeight:600}}>P&ID Reference</label>
+          <input value={form.pidRef||""} onChange={e=>onChange("pidRef",e.target.value.toUpperCase())} placeholder="e.g. PID-001"
+            style={{width:"100%",background:SRF,border:`1px solid ${BDR2}`,borderRadius:6,padding:"7px 11px",color:TXT,fontSize:13,fontFamily:"monospace",outline:"none"}}/>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      {tabs.length>1&&<div style={{display:"flex",gap:2,marginBottom:16,background:CRD,padding:4,borderRadius:8}}>
+        {tabs.map(t=><button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"7px 4px",borderRadius:6,border:"none",background:tab===t?SRF:"transparent",color:tab===t?TXT:DIM,fontSize:12,fontWeight:tab===t?600:400,cursor:"pointer",fontFamily:"inherit",transition:"all .12s"}}>{t}</button>)}
+      </div>}
+
+      {/* Tab content */}
+      <div style={{flex:1}}>
+        {tab==="General"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
+          {def?.fields?.map(f=><div key={f.k} style={{gridColumn:f.t==="area"?"span 2":"span 1"}}><FI f={f} val={form[f.k]||""} err={errs[f.k]} onChange={v=>onChange(f.k,v)}/></div>)}
+        </div>}
+        {tab==="Probes"&&<ProbesPanel probes={probes} onChange={v=>onChange("probes",v)}/>}
+        {tab==="Controller"&&<ControllerPanel equipKey={equipKey} tag={tag} area={area} form={form}
+          onChange={(k,v)=>onChange(k,v)}/>}
       </div>
 
       {/* Footer */}
-      <div style={{display:"flex",gap:7,justifyContent:"flex-end",padding:"14px 22px",borderTop:`1px solid ${BDR}`,flexShrink:0}}>
+      <div style={{display:"flex",gap:7,justifyContent:"flex-end",paddingTop:14,marginTop:14,borderTop:`1px solid ${BDR}`,flexShrink:0}}>
         <button onClick={onClose} style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:7,padding:"7px 15px",color:MUT,cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>Cancel</button>
         <button onClick={onSave} style={{background:color,border:"none",borderRadius:7,padding:"7px 20px",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
           <Plus size={13}/>{modal.mode==="add"?"Add":"Save Changes"}
@@ -802,352 +582,231 @@ function ItemModal({def,typeKey,dept,modal,form,errs,onChange,onSave,onClose}){
   </div>);
 }
 
-/* ─── I&C Probes View ─── */
-function ProbesView({mechDb,probeAssignments,onUpdateAssignment}){
+/* ═══════════════ EQUIPMENT TABLE ═══════════════ */
+function EqTable({dept,equipKey,def,allItems,displayed,q,setQ,stF,setStF,sort,setSort,onAdd,onEdit,onDel}){
   const[hovRow,setHov]=useState(null);
-  const[editProbe,setEditProbe]=useState(null);
-  const[editForm,setEditForm]=useState({});
-
-  const allProbes=[];
-  ["motor","pump"].forEach(k=>{
-    (mechDb[k]||[]).forEach(equip=>{
-      (equip.probes||[]).forEach(probe=>{
-        const tag=fullTag(equip.tagName,equip.area,probe.code);
-        const assignment=probeAssignments[tag]||{};
-        allProbes.push({...probe,equipTag:equip.tagName,area:equip.area,equipType:k,fullTag:tag,assignment});
-      });
-    });
-  });
-
-  const openEdit=p=>{setEditProbe(p);setEditForm({...p.assignment});};
-  const saveAssignment=()=>{
-    onUpdateAssignment(editProbe.fullTag,editForm);
-    setEditProbe(null);setEditForm({});
-  };
-
-  const PROBE_IO_FIELDS=[
-    {k:"signalType",l:"Signal Type",t:"sel",o:["AI","AO","DI","DO"]},
-    {k:"plcCabinet",l:"PLC / Cabinet",t:"text"},
-    {k:"ioRack",l:"Rack",t:"text"},
-    {k:"ioSlot",l:"Slot / Module",t:"text"},
-    {k:"ioChannel",l:"Channel Address",t:"text"},
-    {k:"ioTag",l:"IO Tag",t:"text"},
-  ];
-
-  return(<div>
-    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
-      <div>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
-          <Activity size={16} color={IC}/>
-          <h1 style={{fontFamily:"monospace",fontSize:18,fontWeight:700,color:TXT}}>Machine Probes</h1>
-          <span style={{fontSize:10,color:IC,background:`${IC}18`,padding:"2px 8px",borderRadius:5,fontWeight:600}}>I&C</span>
-        </div>
-        <p style={{color:DIM,fontSize:11}}>{allProbes.length} probes defined by Mechanics · assign IO channel below</p>
-      </div>
-    </div>
-
-    {allProbes.length===0?(
-      <div style={{textAlign:"center",padding:"48px 20px",color:DIM}}>
-        <Activity size={40} color={BDR2} style={{display:"block",margin:"0 auto 12px"}}/>
-        <div style={{color:MUT,fontSize:14}}>No probes defined yet</div>
-        <div style={{color:DIM,fontSize:12,marginTop:4}}>Go to Mechanics → Motors / Pumps → add probes on any instance</div>
-      </div>
-    ):(
-    <div style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:10,overflow:"hidden"}}>
-      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}>
-        <thead><tr style={{background:SRF,borderBottom:`1px solid ${BDR}`}}>
-          {["Full Probe Tag","Equipment","Area","Probe Type","Position","Sensor","Signal","IO Tag","Cabinet","Ch.","Action"].map(h=>(
-            <th key={h} style={{padding:"8px 11px",textAlign:"left",fontSize:10,color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em",whiteSpace:"nowrap"}}>{h}</th>
-          ))}
-        </tr></thead>
-        <tbody>{allProbes.map((p,di)=>{
-          const a=p.assignment;const hasIO=a.ioTag||a.plcCabinet;
-          return(<tr key={p.fullTag} onMouseEnter={()=>setHov(di)} onMouseLeave={()=>setHov(null)} style={{borderBottom:`1px solid ${BDR}`,background:hovRow===di?`${CRD}bb`:"transparent"}}>
-            <td style={{padding:"9px 11px",fontFamily:"monospace",fontSize:12,fontWeight:600,color:IC,whiteSpace:"nowrap"}}>{p.fullTag}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT,fontFamily:"monospace"}}>{p.equipTag}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT}}>{p.area||"—"}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:TXT,whiteSpace:"nowrap"}}>{p.type}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT,whiteSpace:"nowrap"}}>{p.position}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT}}>{p.sensorType}</td>
-            <td style={{padding:"9px 11px"}}>{a.signalType?<Badge label={a.signalType} color={SIGC[a.signalType]||MUT} bg={`${SIGC[a.signalType]||MUT}20`}/>:<span style={{color:BDR2}}>—</span>}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:ACC,fontFamily:"monospace"}}>{a.ioTag||<span style={{color:BDR2}}>—</span>}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT}}>{a.plcCabinet||<span style={{color:BDR2}}>—</span>}</td>
-            <td style={{padding:"9px 11px",fontSize:12,color:MUT,fontFamily:"monospace"}}>{a.ioChannel||<span style={{color:BDR2}}>—</span>}</td>
-            <td style={{padding:"9px 11px",whiteSpace:"nowrap"}}>
-              <button onClick={()=>openEdit(p)} style={{background:`${hasIO?SUC:IC}18`,border:`1px solid ${hasIO?SUC:IC}44`,borderRadius:5,padding:"4px 8px",color:hasIO?SUC:IC,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
-                {hasIO?"Edit IO":"Assign IO"}
-              </button>
-            </td>
-          </tr>);
-        })}</tbody>
-      </table></div>
-      <div style={{padding:"7px 11px",borderTop:`1px solid ${BDR}`,fontSize:11,color:DIM}}>
-        {allProbes.filter(p=>p.assignment.ioTag).length} of {allProbes.length} probes have IO assigned
-      </div>
-    </div>
-    )}
-
-    {/* IO Assignment mini modal */}
-    {editProbe&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500}} onClick={()=>setEditProbe(null)}>
-        <div style={{background:CRD,border:`1px solid ${IC}55`,borderRadius:12,padding:22,width:480,maxWidth:"92vw"}} onClick={e=>e.stopPropagation()}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-            <div>
-              <h3 style={{color:IC,fontFamily:"monospace",fontSize:14,fontWeight:700,marginBottom:2}}>Assign IO — {editProbe.fullTag}</h3>
-              <p style={{color:DIM,fontSize:11}}>{editProbe.type} · {editProbe.position} · {editProbe.sensorType}</p>
-            </div>
-            <button onClick={()=>setEditProbe(null)} style={{background:"none",border:"none",color:MUT,cursor:"pointer"}}><X size={14}/></button>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:16}}>
-            {PROBE_IO_FIELDS.map(f=>(
-              <div key={f.k}>
-                <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4,fontWeight:600}}>{f.l}</label>
-                {f.t==="sel"
-                  ?<select value={editForm[f.k]||""} onChange={e=>setEditForm(p=>({...p,[f.k]:e.target.value}))} style={S({cursor:"pointer"})}><option value="">—</option>{f.o.map(o=><option key={o} value={o}>{o}</option>)}</select>
-                  :<input value={editForm[f.k]||""} onChange={e=>setEditForm(p=>({...p,[f.k]:e.target.value}))} style={S()}/>}
-              </div>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}>
-            <button onClick={()=>setEditProbe(null)} style={{background:SRF,border:`1px solid ${BDR2}`,borderRadius:7,padding:"7px 14px",color:MUT,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
-            <button onClick={saveAssignment} style={{background:IC,border:"none",borderRadius:7,padding:"7px 16px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Save Assignment</button>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>);
-}
-
-/* ─── Equipment Table ─── */
-function EqTable({dept,typeKey,def,allItems,displayed,q,setQ,stF,setStF,sort,setSort,onAdd,onEdit,onDel}){
-  const[hovRow,sHR]=useState(null);
   const sumFields=def.fields.filter(f=>def.summary.includes(f.k));
-  const deptColor=dept==="mech"?MC:IC;
+  const dC=dept==="mech"?MC:IC;
   return(<div>
     <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
       <div>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
-          <Dot color={def.color} size={10}/>
-          <h1 style={{fontFamily:"monospace",fontSize:18,fontWeight:700,color:TXT}}>{def.label}</h1>
-          <span style={{fontSize:10,color:deptColor,background:`${deptColor}18`,padding:"2px 8px",borderRadius:5,fontWeight:600}}>{dept==="mech"?"MECHANICS":"I&C"}</span>
+          <Dot color={def.color} size={10}/><h1 style={{fontFamily:"monospace",fontSize:18,fontWeight:700,color:TXT}}>{def.label}</h1>
+          <span style={{fontSize:10,color:dC,background:`${dC}18`,padding:"2px 8px",borderRadius:5,fontWeight:600}}>{dept==="mech"?"MECHANICS":"I&C"}</span>
           {def.custom&&<span style={{fontSize:9,color:def.color,background:`${def.color}15`,padding:"2px 6px",borderRadius:4}}>custom</span>}
         </div>
-        <p style={{color:DIM,fontSize:11}}>{allItems.length} registered · {displayed.length} shown · prefix <span style={{color:MUT,fontFamily:"monospace"}}>{def.prefix}-XXX</span></p>
+        <p style={{color:DIM,fontSize:11}}>{allItems.length} registered \u00b7 {displayed.length} shown \u00b7 prefix <span style={{color:MUT,fontFamily:"monospace"}}>{def.prefix}-XXX</span></p>
       </div>
       <button onClick={onAdd} style={{background:def.color,border:"none",borderRadius:8,padding:"8px 14px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:5,fontFamily:"inherit",flexShrink:0}}>
-        <Plus size={13}/> Add {def.label.replace(/s$/,"")}
+        <Plus size={13}/>Add {def.label.replace(/s$/,"")}
       </button>
     </div>
     <div style={{display:"flex",gap:7,marginBottom:11}}>
-      <div style={{flex:1,position:"relative"}}><Search size={13} color={DIM} style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search tag, description, area, location…" style={S({paddingLeft:29,border:`1px solid ${BDR}`,background:CRD})}/></div>
+      <div style={{flex:1,position:"relative"}}><Search size={13} color={DIM} style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search tag, area, description\u2026" style={S({paddingLeft:29,border:`1px solid ${BDR}`,background:CRD})}/></div>
       <select value={stF} onChange={e=>setStF(e.target.value)} style={S({width:"auto",background:CRD,border:`1px solid ${BDR}`,cursor:"pointer",color:stF==="All"?DIM:TXT})}>
         {["All","Active","Standby","Maintenance","Decommissioned","Spare"].map(s=><option key={s} value={s}>{s==="All"?"All Statuses":s}</option>)}
       </select>
     </div>
-    {displayed.length===0?(
-      <div style={{textAlign:"center",padding:"48px 20px",color:DIM}}>
-        <div style={{fontSize:32,marginBottom:10,opacity:.2}}>○</div>
-        <div style={{fontSize:14,color:MUT,marginBottom:4}}>{allItems.length===0?`No ${def.label} registered yet`:"No items match"}</div>
-        {allItems.length===0&&<button onClick={onAdd} style={{marginTop:12,background:def.color,border:"none",borderRadius:8,padding:"8px 18px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:5}}><Plus size={13}/> Add first {def.label.replace(/s$/,"")}</button>}
-      </div>
-    ):(
+    {displayed.length===0?(<div style={{textAlign:"center",padding:"48px",color:DIM}}>
+      <div style={{fontSize:28,marginBottom:10,opacity:.2}}>\u25cb</div>
+      <div style={{fontSize:14,color:MUT,marginBottom:4}}>{allItems.length===0?`No ${def.label} registered yet`:"No items match"}</div>
+      {allItems.length===0&&<button onClick={onAdd} style={{marginTop:12,background:def.color,border:"none",borderRadius:8,padding:"8px 18px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:5}}><Plus size={13}/>Add first {def.label.replace(/s$/,"")}</button>}
+    </div>):(
     <div style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:10,overflow:"hidden"}}>
       <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}>
         <thead><tr style={{background:SRF,borderBottom:`1px solid ${BDR}`}}>
-          {[{k:"tagName",l:"Tag Name"},{k:"area",l:"Area"},...sumFields,{k:"status",l:"Status"}].map(f=>(
+          {[{k:"tagName",l:"Tag"},{k:"area",l:"Area"},{k:"pidRef",l:"P&ID"},...sumFields,{k:"status",l:"Status"}].map(f=>(
             <th key={f.k} onClick={()=>setSort(p=>({k:f.k,d:p.k===f.k&&p.d==="asc"?"desc":"asc"}))}
-              style={{padding:"8px 11px",textAlign:"left",fontSize:10,cursor:"pointer",userSelect:"none",color:sort.k===f.k?def.color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em",whiteSpace:"nowrap"}}>
-              {f.l}{sort.k===f.k?(sort.d==="asc"?" ↑":" ↓"):""}
+              style={{padding:"7px 10px",textAlign:"left",fontSize:10,cursor:"pointer",userSelect:"none",color:sort.k===f.k?def.color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em",whiteSpace:"nowrap"}}>
+              {f.l}{sort.k===f.k?(sort.d==="asc"?" \u2191":" \u2193"):""}
             </th>))}
-          <th style={{padding:"8px 11px",textAlign:"right",fontSize:10,color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em"}}>Actions</th>
+          <th style={{padding:"7px 10px",textAlign:"right",fontSize:10,color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em"}}>Actions</th>
         </tr></thead>
         <tbody>{displayed.map((item,di)=>{
           const ri=allItems.indexOf(item);const sc=STC[item.status]||{c:MUT,b:BDR};
           const probeCount=(item.probes||[]).length;
           const sigCount=Object.values(item.signals||{}).filter(s=>s.enabled).length;
-          return(<tr key={item.tagName} onMouseEnter={()=>sHR(di)} onMouseLeave={()=>sHR(null)} style={{borderBottom:`1px solid ${BDR}`,background:hovRow===di?`${CRD}bb`:"transparent"}}>
-            <td style={{padding:"10px 11px",fontFamily:"monospace",fontSize:13,fontWeight:600,color:def.color,whiteSpace:"nowrap"}}>
+          return(<tr key={item.tagName} onMouseEnter={()=>setHov(di)} onMouseLeave={()=>setHov(null)} style={{borderBottom:`1px solid ${BDR}`,background:hovRow===di?`${CRD}bb`:"transparent"}}>
+            <td style={{padding:"9px 10px",fontFamily:"monospace",fontSize:12,fontWeight:600,color:def.color,whiteSpace:"nowrap"}}>
               {item.tagName}
-              <div style={{display:"flex",gap:4,marginTop:2}}>
-                {probeCount>0&&<span style={{fontSize:9,color:MC,background:`${MC}18`,padding:"1px 5px",borderRadius:3}}>{probeCount} probes</span>}
-                {sigCount>0&&<span style={{fontSize:9,color:ACC,background:`${ACC}18`,padding:"1px 5px",borderRadius:3}}>{sigCount} signals</span>}
-              </div>
+              {probeCount>0&&<span style={{marginLeft:5,fontSize:9,color:SUC,background:`${SUC}15`,padding:"1px 5px",borderRadius:3}}>{probeCount}p</span>}
+              {sigCount>0&&<span style={{marginLeft:3,fontSize:9,color:ACC,background:`${ACC}15`,padding:"1px 5px",borderRadius:3}}>{sigCount}\u2A09</span>}
             </td>
-            <td style={{padding:"10px 11px",fontSize:12,color:ACC,fontFamily:"monospace"}}>{item.area||<span style={{color:BDR2}}>—</span>}</td>
-            {sumFields.map(f=>{
-              const v=item[f.k];const sigC=SIGC[v];
-              if(f.k==="signalType"&&v&&sigC)return<td key={f.k} style={{padding:"10px 11px"}}><Badge label={v} color={sigC} bg={`${sigC}20`}/></td>;
-              if(f.k==="ioTag"&&v)return<td key={f.k} style={{padding:"10px 11px",fontSize:12,color:ACC,fontFamily:"monospace",fontWeight:600}}>{v}</td>;
-              return<td key={f.k} style={{padding:"10px 11px",fontSize:12,color:MUT,maxWidth:130,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v||<span style={{color:BDR2}}>—</span>}</td>;
+            <td style={{padding:"9px 10px",fontSize:11,color:ACC,fontFamily:"monospace"}}>{item.area||<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:MUT,fontFamily:"monospace"}}>{item.pidRef||<span style={{color:BDR2}}>\u2014</span>}</td>
+            {sumFields.map(f=>{const v=item[f.k];const sigC=SIGC[v];
+              if(f.k==="signalType"&&v&&sigC)return<td key={f.k} style={{padding:"9px 10px"}}><Badge label={v} color={sigC} bg={`${sigC}20`}/></td>;
+              if(f.k==="ioTag"&&v)return<td key={f.k} style={{padding:"9px 10px",fontSize:11,color:ACC,fontFamily:"monospace",fontWeight:600}}>{v}</td>;
+              return<td key={f.k} style={{padding:"9px 10px",fontSize:12,color:MUT,maxWidth:120,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v||<span style={{color:BDR2}}>\u2014</span>}</td>;
             })}
-            <td style={{padding:"10px 11px"}}>{item.status?<Badge label={item.status} color={sc.c} bg={sc.b}/>:<span style={{color:BDR2}}>—</span>}</td>
-            <td style={{padding:"10px 11px",textAlign:"right",whiteSpace:"nowrap"}}>
-              <button onClick={()=>onEdit(item,ri)} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:5,padding:"4px 8px",color:MUT,fontSize:11,cursor:"pointer",marginRight:5,fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:3}}><Edit2 size={11}/> Edit</button>
+            <td style={{padding:"9px 10px"}}>{item.status?<Badge label={item.status} color={sc.c} bg={sc.b}/>:<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px",textAlign:"right",whiteSpace:"nowrap"}}>
+              <button onClick={()=>onEdit(item,ri)} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:5,padding:"4px 8px",color:MUT,fontSize:11,cursor:"pointer",marginRight:5,fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:3}}><Edit2 size={11}/>Edit</button>
               <button onClick={()=>onDel(item,ri)} style={{background:"transparent",border:`1px solid ${DNG}40`,borderRadius:5,padding:"4px 8px",color:DNG,fontSize:11,cursor:"pointer",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:3}}><Trash2 size={11}/></button>
             </td>
-          </tr>);
-        })}</tbody>
+          </tr>);})}
+        </tbody>
       </table></div>
-      <div style={{padding:"7px 11px",borderTop:`1px solid ${BDR}`,fontSize:11,color:DIM,display:"flex",justifyContent:"space-between"}}>
+      <div style={{padding:"6px 10px",borderTop:`1px solid ${BDR}`,fontSize:11,color:DIM,display:"flex",justifyContent:"space-between"}}>
         <span>Showing {displayed.length} of {allItems.length}</span>
-        <span>{allItems.filter(i=>i.status==="Active").length} active{dept==="iac"?` · ${allItems.filter(i=>i.ioTag).length} IO assigned`:""}</span>
+        <span>{allItems.filter(i=>i.status==="Active").length} active{dept==="iac"?` \u00b7 ${allItems.filter(i=>i.ioTag).length} IO assigned`:""}</span>
       </div>
-    </div>
-    )}
+    </div>)}
   </div>);
 }
 
-/* ─── New Type Modal ─── */
+/* ═══════════════ PROBES VIEW (I&C) ═══════════════ */
+function ProbesView({mechDb,onSaveProbe}){
+  const rows=[];
+  Object.entries(mechDb).forEach(([k,items])=>{
+    (items||[]).forEach(item=>{
+      (item.probes||[]).forEach(p=>{
+        if(p.type||p.code)rows.push({...p,parentTag:item.tagName,parentArea:item.area||"",parentDesc:item.description||"",parentType:k,instTag:mkInstanceTag(item.tagName,item.area||""),fullTag:p.code?mkSignalTag(item.tagName,item.area||"",p.code):""});
+      });
+    });
+  });
+  const[hover,setHov]=useState(null);
+  return(<div>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+      <span style={{fontSize:18}}>\u26a1</span><h1 style={{fontFamily:"monospace",fontSize:18,fontWeight:700,color:TXT}}>Motor / Pump Probes</h1>
+      <span style={{fontSize:10,color:IC,background:`${IC}18`,padding:"2px 8px",borderRadius:5,fontWeight:600}}>I&C</span>
+    </div>
+    <p style={{color:DIM,fontSize:11,marginBottom:16}}>Auto-generated from MECHANICS probe definitions. Assign IO channels here.</p>
+    {rows.length===0?<div style={{textAlign:"center",padding:"48px",color:DIM,border:`1px dashed ${BDR2}`,borderRadius:10}}>
+      <div style={{fontSize:28,marginBottom:10,opacity:.2}}>\u26a1</div>
+      <div style={{fontSize:14,color:MUT}}>No probes defined yet. Go to Mechanics \u2192 Motors/Pumps and add probes in the instance form.</div>
+    </div>:(
+    <div style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:10,overflow:"hidden"}}>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}>
+        <thead><tr style={{background:SRF,borderBottom:`1px solid ${BDR}`}}>
+          {["Full Tag","Parent Equipment","Type","Sensor","Position","Sig","IO Tag","Cabinet","Channel"].map(h=>(
+            <th key={h} style={{padding:"7px 10px",textAlign:"left",fontSize:10,color:DIM,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.07em",whiteSpace:"nowrap"}}>{h}</th>
+          ))}
+        </tr></thead>
+        <tbody>{rows.map((r,i)=>(
+          <tr key={i} onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)} style={{borderBottom:`1px solid ${BDR}`,background:hover===i?`${CRD}bb`:"transparent"}}>
+            <td style={{padding:"9px 10px",fontFamily:"monospace",fontSize:11,fontWeight:600,color:r.fullTag?ACC:DIM,whiteSpace:"nowrap"}}>{r.fullTag||"(no code)"}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:MUT}}><span style={{fontFamily:"monospace",color:MC,fontWeight:600}}>{r.parentTag}</span>{r.parentDesc&&<span style={{fontSize:10,color:DIM,display:"block"}}>{r.parentDesc}</span>}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:TXT,whiteSpace:"nowrap"}}>{r.type}</td>
+            <td style={{padding:"9px 10px",fontSize:10,color:MUT}}>{r.sensorType}</td>
+            <td style={{padding:"9px 10px",fontSize:10,color:MUT}}>{r.position||<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px"}}>{r.sig?<Badge label={r.sig} color={SIGC[r.sig]||MUT} bg={`${SIGC[r.sig]||MUT}20`}/>:<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:r.ioTag?ACC:DIM,fontFamily:"monospace"}}>{r.ioTag||<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:MUT}}>{r.plcCabinet||<span style={{color:BDR2}}>\u2014</span>}</td>
+            <td style={{padding:"9px 10px",fontSize:11,color:MUT,fontFamily:"monospace"}}>{r.ioChannel||<span style={{color:BDR2}}>\u2014</span>}</td>
+          </tr>
+        ))}</tbody>
+      </table></div>
+      <div style={{padding:"6px 10px",borderTop:`1px solid ${BDR}`,fontSize:11,color:DIM,display:"flex",justifyContent:"space-between"}}>
+        <span>{rows.length} probes defined by Mechanics</span>
+        <span>{rows.filter(r=>r.ioTag).length} IO assigned</span>
+      </div>
+    </div>)}
+  </div>);
+}
+
+/* ═══════════════ NEW TYPE MODAL ═══════════════ */
 function NewTypeModal({dept,onAdd,onClose}){
-  const[name,setName]=useState("");const[prefix,setPrefix]=useState("");
-  const[color,setColor]=useState(dept==="mech"?"#64748b":"#7c3aed");
+  const[name,setName]=useState("");const[prefix,setPrefix]=useState("");const[color,setColor]=useState("#64748b");
   const[tpl,setTpl]=useState(dept==="mech"?"mechanical":"transmitter");
   const COLORS=["#3b82f6","#8b5cf6","#10b981","#f59e0b","#ef4444","#06b6d4","#ec4899","#84cc16","#f97316","#14b8a6","#64748b","#7c3aed"];
-  const accent=dept==="mech"?MC:IC;
-  const handleAdd=()=>{
-    if(!name.trim()||!prefix.trim())return;
-    const key="custom_"+Date.now();
-    const baseFields=[...TPL_FIELDS[tpl]];
-    const finalFields=dept==="iac"?[...baseFields,...IO_FIELDS]:baseFields;
-    onAdd(key,{label:name.trim(),prefix:prefix.trim().toUpperCase(),color,fields:finalFields,summary:["description","service","location","status"],custom:true});
-    onClose();
-  };
+  const ac=dept==="mech"?MC:IC;const tpls=dept==="mech"?["mechanical"]:["transmitter","switch"];
+  const handleAdd=()=>{if(!name.trim()||!prefix.trim())return;const key="custom_"+Date.now();const bf=[...TPL_FIELDS[tpl]];const ff=dept==="iac"?[...bf,...IO_FIELDS]:bf;onAdd(key,{label:name.trim(),prefix:prefix.trim().toUpperCase(),color,fields:ff,summary:["description","service","location","status"],custom:true});onClose();};
   return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500}} onClick={onClose}>
-    <div style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:14,padding:24,width:420,maxWidth:"92vw"}} onClick={e=>e.stopPropagation()}>
-      <h2 style={{fontFamily:"monospace",fontSize:15,fontWeight:700,color:accent,marginBottom:3}}>New Equipment Type</h2>
-      <p style={{color:DIM,fontSize:11,marginBottom:18}}>Add a custom type to {dept==="mech"?"Mechanics":"I&C"}</p>
-      <div style={{display:"grid",gap:12}}>
-        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:4,fontWeight:600}}>Type Name *</label><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Chlorinators" style={S()}/></div>
-        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:4,fontWeight:600}}>Tag Prefix *</label><input value={prefix} onChange={e=>setPrefix(e.target.value.toUpperCase())} placeholder="e.g. CL" style={S({fontFamily:"monospace",fontWeight:700})}/></div>
-        <div>
-          <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:6,fontWeight:600}}>Field Template</label>
-          <div style={{display:"flex",gap:6}}>{(dept==="mech"?["mechanical"]:["transmitter","switch"]).map(t=>(
-            <button key={t} onClick={()=>setTpl(t)} style={{flex:1,padding:"7px",borderRadius:7,border:`1px solid ${tpl===t?accent:BDR2}`,background:tpl===t?`${accent}18`:CRD,color:tpl===t?accent:DIM,fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:tpl===t?600:400,textTransform:"capitalize"}}>{t}</button>
-          ))}</div>
+    <div style={{background:CRD,border:`1px solid ${BDR2}`,borderRadius:14,padding:24,width:400,maxWidth:"92vw"}} onClick={e=>e.stopPropagation()}>
+      <h2 style={{fontFamily:"monospace",fontSize:15,fontWeight:700,color:ac,marginBottom:16}}>New Equipment Type</h2>
+      <div style={{display:"grid",gap:11}}>
+        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:3,fontWeight:600}}>Type Name *</label><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Chlorinators" style={S()}/></div>
+        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:3,fontWeight:600}}>Tag Prefix *</label><input value={prefix} onChange={e=>setPrefix(e.target.value.toUpperCase())} placeholder="e.g. CL" style={S({fontFamily:"monospace",fontWeight:700})}/></div>
+        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:6,fontWeight:600}}>Field Template</label>
+          <div style={{display:"flex",gap:6}}>{tpls.map(t=><button key={t} onClick={()=>setTpl(t)} style={{flex:1,padding:"7px",borderRadius:7,border:`1px solid ${tpl===t?ac:BDR2}`,background:tpl===t?`${ac}18`:CRD,color:tpl===t?ac:DIM,fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:tpl===t?600:400,textTransform:"capitalize"}}>{t}</button>)}</div>
         </div>
-        <div>
-          <label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:6,fontWeight:600}}>Color</label>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{COLORS.map(c=><button key={c} onClick={()=>setColor(c)} style={{width:22,height:22,borderRadius:"50%",background:c,border:`2px solid ${color===c?"white":"transparent"}`,cursor:"pointer"}}/>)}</div>
+        <div><label style={{fontSize:10,color:DIM,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:5,fontWeight:600}}>Color</label>
+          <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>{COLORS.map(c=><button key={c} onClick={()=>setColor(c)} style={{width:22,height:22,borderRadius:"50%",background:c,border:`2px solid ${color===c?"white":"transparent"}`,cursor:"pointer"}}/>)}</div>
         </div>
       </div>
-      <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:20}}>
+      <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:18}}>
         <button onClick={onClose} style={{background:SRF,border:`1px solid ${BDR2}`,borderRadius:7,padding:"7px 14px",color:MUT,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
-        <button onClick={handleAdd} disabled={!name.trim()||!prefix.trim()} style={{background:accent,border:"none",borderRadius:7,padding:"7px 18px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:!name.trim()||!prefix.trim()?0.5:1}}>
-          <Plus size={12} style={{display:"inline",marginRight:4}}/>Create Type
+        <button onClick={handleAdd} disabled={!name.trim()||!prefix.trim()} style={{background:ac,border:"none",borderRadius:7,padding:"7px 18px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:(!name.trim()||!prefix.trim())?0.5:1}}>
+          <Plus size={11} style={{display:"inline",marginRight:4}}/>Create Type
         </button>
       </div>
     </div>
   </div>);
 }
 
-/* ─── Overview ─── */
+/* ═══════════════ OVERVIEW ═══════════════ */
 function Overview({mechDb,iacDb,customDefs,onNav,onAddType,onMI,onME,onII,onIE,onExportIO,mRef,iRef}){
-  const mechDefs={...MECH_DEF,...(customDefs.mech||{})};
-  const iacDefs={...IAC_DEF,...(customDefs.iac||{})};
-  const mechTotal=Object.keys(mechDefs).reduce((s,k)=>s+(mechDb[k]?.length||0),0);
-  const iacTotal=Object.keys(iacDefs).reduce((s,k)=>s+(iacDb[k]?.length||0),0);
-  const probeTotal=["motor","pump"].reduce((s,k)=>s+(mechDb[k]||[]).reduce((ss,e)=>ss+(e.probes||[]).length,0),0);
-  const signalTotal=Object.values(mechDb).flat().reduce((s,e)=>s+Object.values(e.signals||{}).filter(v=>v.enabled).length,0);
-
-  const DeptCard=({dept,defs,db,color,icon:Icon,title,sub,fileRef,onImport,onExport,addLabel})=>{
-    const total=Object.keys(defs).reduce((s,k)=>s+(db[k]?.length||0),0);
-    return(<div style={{background:CRD,border:`1px solid ${color}44`,borderRadius:14,padding:18,borderTop:`3px solid ${color}`}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><Icon size={14} color={color}/><h2 style={{fontFamily:"monospace",fontWeight:700,fontSize:14,color}}>{title}</h2></div>
-        <DeptIO color={color} onImport={onImport} onExport={onExport} fileRef={fileRef}/>
-      </div>
-      <p style={{color:DIM,fontSize:10,marginBottom:12}}>{sub}</p>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
-        {Object.entries(defs).map(([k,def])=>{
-          const[h,sH]=useState(false);const cnt=db[k]?.length||0;
-          return(<button key={k} onClick={()=>onNav(dept,k)} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)}
-            style={{background:SRF,border:`1px solid ${h?def.color:BDR}`,borderRadius:8,padding:"9px 10px",textAlign:"left",cursor:"pointer",fontFamily:"inherit",transition:"border-color .15s",position:"relative"}}>
-            {def.custom&&<span style={{position:"absolute",top:3,right:5,fontSize:8,color:def.color}}>custom</span>}
-            <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}><Dot color={def.color} size={5}/><span style={{color:MUT,fontSize:10}}>{def.label}</span></div>
-            <div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{color:def.color,fontSize:18,fontWeight:700,fontFamily:"monospace"}}>{cnt}</span>{cnt>0&&<span style={{color:SUC,fontSize:9}}>{(db[k]||[]).filter(i=>i.status==="Active").length} act</span>}</div>
-          </button>);
-        })}
-      </div>
-      <button onClick={()=>onAddType(dept)} style={{width:"100%",background:"transparent",border:`1px dashed ${color}44`,borderRadius:7,padding:"6px",color,fontSize:11,cursor:"pointer",fontFamily:"inherit",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Plus size={11}/>{addLabel}</button>
-      <div style={{padding:"8px 10px",background:SRF,borderRadius:7,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{color:DIM,fontSize:11}}>Total {title==="MECHANICS"?"equipment":"instruments"}</span>
-        <span style={{color,fontFamily:"monospace",fontWeight:700,fontSize:17}}>{total}</span>
-      </div>
-    </div>);
-  };
-
+  const mDefs={...MECH_DEF,...(customDefs.mech||{})};const iDefs={...IAC_DEF,...(customDefs.iac||{})};
+  const mTotal=Object.keys(mDefs).reduce((s,k)=>s+(mechDb[k]?.length||0),0);
+  const iTotal=Object.keys(iDefs).reduce((s,k)=>s+(iacDb[k]?.length||0),0);
+  const probeCount=Object.values(mechDb).flat().reduce((s,i)=>s+(i.probes?.length||0),0);
   return(<div>
-    <div style={{marginBottom:18}}><h1 style={{fontFamily:"monospace",fontSize:20,fontWeight:700,color:TXT,marginBottom:3}}>Project Overview</h1><p style={{color:DIM,fontSize:12}}>MECHANICS & I&C central hub · Export to save · IO List = generated output</p></div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-      <DeptCard dept="mech" defs={mechDefs} db={mechDb} color={MC} icon={Wrench} title="MECHANICS" sub="Physical equipment — specs, power, brand, typicals" fileRef={mRef} onImport={onMI} onExport={onME} addLabel="Add Equipment Type"/>
-      <DeptCard dept="iac"  defs={iacDefs}  db={iacDb}  color={IC}  icon={Cpu}   title="I&C"       sub="Instrumentation — IO channel is an attribute of each device" fileRef={iRef} onImport={onII} onExport={onIE} addLabel="Add Instrument Type"/>
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>
-      {[{n:probeTotal,l:"Machine Probes",c:"#06b6d4"},{n:signalTotal,l:"IO Signals Defined",c:ACC},{n:Object.values(iacDb).flat().filter(i=>i.ioTag).length,l:"I&C IO Assigned",c:IC}].map(({n,l,c})=>(
-        <div key={l} style={{background:CRD,border:`1px solid ${BDR}`,borderRadius:9,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{color:DIM,fontSize:11}}>{l}</span>
-          <span style={{color:c,fontFamily:"monospace",fontWeight:700,fontSize:20}}>{n}</span>
+    <div style={{marginBottom:18}}><h1 style={{fontFamily:"monospace",fontSize:20,fontWeight:700,color:TXT,marginBottom:3}}>Project Overview</h1><p style={{color:DIM,fontSize:12}}>MECHANICS & I&C hub \u00b7 IO List is a generated output</p></div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
+      {[{dept:"mech",label:"MECHANICS",color:MC,desc:"Physical equipment \u2014 probes, controllers, IO signals",defs:mDefs,db:mechDb,total:mTotal,Icon:Wrench,onImport:onMI,onExport:onME,ref:mRef},
+        {dept:"iac", label:"I&C",      color:IC,desc:"Instrumentation \u2014 IO channel per device",       defs:iDefs,db:iacDb, total:iTotal,Icon:Cpu,  onImport:onII,onExport:onIE,ref:iRef}].map(({dept,label,color,desc,defs,db,total,Icon,onImport,onExport,ref})=>(
+      <div key={dept} style={{background:CRD,border:`1px solid ${color}44`,borderRadius:14,padding:18,borderTop:`3px solid ${color}`}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+          <div style={{display:"flex",alignItems:"center",gap:7}}><Icon size={14} color={color}/><h2 style={{fontFamily:"monospace",fontWeight:700,fontSize:14,color}}>{label}</h2></div>
+          <DeptIO color={color} onImport={onImport} onExport={onExport} fileRef={ref}/>
         </div>
-      ))}
+        <p style={{color:DIM,fontSize:10,marginBottom:12}}>{desc}</p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
+          {Object.entries(defs).map(([k,def])=>{const[h,sH]=useState(false);const cnt=db[k]?.length||0;
+            return(<button key={k} onClick={()=>onNav(dept,k)} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)}
+              style={{background:SRF,border:`1px solid ${h?def.color:BDR}`,borderRadius:8,padding:"8px 10px",textAlign:"left",cursor:"pointer",fontFamily:"inherit",transition:"border-color .15s",position:"relative"}}>
+              {def.custom&&<span style={{position:"absolute",top:3,right:5,fontSize:8,color:def.color}}>custom</span>}
+              <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:2}}><Dot color={def.color} size={5}/><span style={{color:MUT,fontSize:10}}>{def.label}</span></div>
+              <div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{color:def.color,fontSize:17,fontWeight:700,fontFamily:"monospace"}}>{cnt}</span>
+              {cnt>0&&<span style={{color:SUC,fontSize:9}}>{(db[k]||[]).filter(i=>i.status==="Active").length} act</span>}</div>
+            </button>);})}
+        </div>
+        {dept==="iac"&&probeCount>0&&<button onClick={()=>onNav("iac","__probes__")} style={{width:"100%",background:`${IC}10`,border:`1px solid ${IC}33`,borderRadius:8,padding:"7px 10px",textAlign:"left",cursor:"pointer",fontFamily:"inherit",marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{color:IC,fontSize:11,fontWeight:600}}>\u26a1 Motor / Pump Probes</span>
+          <span style={{color:IC,fontFamily:"monospace",fontWeight:700,fontSize:14}}>{probeCount}</span>
+        </button>}
+        <button onClick={()=>onAddType(dept)} style={{width:"100%",background:"transparent",border:`1px dashed ${color}44`,borderRadius:7,padding:"5px",color,fontSize:11,cursor:"pointer",fontFamily:"inherit",marginBottom:8,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Plus size={11}/>Add {dept==="mech"?"Equipment":"Instrument"} Type</button>
+        <div style={{padding:"7px 10px",background:SRF,borderRadius:7,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{color:DIM,fontSize:11}}>Total {dept==="mech"?"equipment":"instruments"}</span><span style={{color,fontFamily:"monospace",fontWeight:700,fontSize:17}}>{total}</span>
+        </div>
+      </div>
+    ))}
     </div>
     <button onClick={onExportIO} style={{width:"100%",background:`linear-gradient(135deg,${MC}22,${IC}22)`,border:`1px solid ${ACC}44`,borderRadius:10,padding:"14px",color:TXT,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-      <Download size={16} color={ACC}/> Generate & Export IO List (MECHANICS + I&C combined) <ChevronRight size={14} color={DIM}/>
+      <Download size={16} color={ACC}/>Generate & Export IO List (MECHANICS + I&C combined)<ChevronRight size={14} color={DIM}/>
     </button>
   </div>);
 }
 
-/* ─── App ─── */
-const initMechDb=()=>Object.fromEntries(MECH_KEYS.map(k=>[k,[]]));
-const initIacDb=()=>({...Object.fromEntries(IAC_KEYS.map(k=>[k,[]])),probeAssignments:{}});
-
-function initSignals(typeKey){
-  const varList=typeKey==="motor"?MOTOR_VARIANTS:typeKey==="valve"?VALVE_VARIANTS:typeKey==="solenoid"?SOL_VARIANTS:[];
-  return Object.fromEntries(varList.map(v=>[v.id,{enabled:false,code:v.code,signalType:v.sigT,commMethod:"Hardwired",protocol:""}]));
-}
-
+/* ═══════════════ APP ═══════════════ */
 function App(){
-  const[project,setProject]=useState("Water Treatment Plant — Project Alpha");
+  const[project,setProject]=useState("Water Treatment Plant \u2014 Project Alpha");
   const[editP,setEditP]=useState(false);const[tmpP,setTmpP]=useState("");
-  const[mechDb,setMechDb]=useState(initMechDb);
-  const[iacDb,setIacDb]=useState(initIacDb);
+  const[mechDb,setMechDb]=useState(()=>Object.fromEntries(MECH_KEYS.map(k=>[k,[]])));
+  const[iacDb,setIacDb]=useState(()=>Object.fromEntries(IAC_KEYS.map(k=>[k,[]])));
   const[customDefs,setCustomDefs]=useState({mech:{},iac:{}});
-  const[view,setView]=useState(null);// null|{dept,typeKey}|"probes"
+  const[view,setView]=useState(null);
   const[modal,setModal]=useState(null);
-  const[form,setForm]=useState({});
-  const[errs,setErrs]=useState({});
-  const[q,setQ]=useState("");
-  const[stF,setStF]=useState("All");
-  const[sort,setSort]=useState({k:"tagName",d:"asc"});
-  const[toast,setToast]=useState(null);
-  const[delC,setDel]=useState(null);
-  const[newTypeDept,setNewTypeDept]=useState(null);
+  const[form,setForm]=useState({});const[errs,setErrs]=useState({});
+  const[q,setQ]=useState("");const[stF,setStF]=useState("All");const[sort,setSort]=useState({k:"tagName",d:"asc"});
+  const[toast,setToast]=useState(null);const[delC,setDel]=useState(null);const[newTypeDept,setNewTypeDept]=useState(null);
   const mRef=useRef(null),iRef=useRef(null);
 
-  const allTags=useMemo(()=>
-    [...Object.values(mechDb).flat(),...Object.values(iacDb).filter(v=>Array.isArray(v)).flat()].map(e=>e.tagName?.toUpperCase()),
-    [mechDb,iacDb]);
+  const allTags=useMemo(()=>[...Object.values(mechDb).flat(),...Object.values(iacDb).flat()].map(e=>e.tagName?.toUpperCase()),[mechDb,iacDb]);
+  const showToast=useCallback((msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),3200);},[]);
 
-  const showToast=useCallback((msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),3000);},[]);
+  const getDef=(dept,key)=>{
+    if(key==="__probes__")return{label:"Probes",color:IC,prefix:"",fields:[],summary:[]};
+    if(dept==="mech")return MECH_DEF[key]||(customDefs.mech||{})[key];
+    return IAC_DEF[key]||(customDefs.iac||{})[key];
+  };
+  const getDb=d=>d==="mech"?mechDb:iacDb;
+  const setDb=(d,v)=>d==="mech"?setMechDb(v):setIacDb(v);
 
-  const getDef=(dept,typeKey)=>{
-    if(dept==="mech")return MECH_DEF[typeKey]||(customDefs.mech||{})[typeKey];
-    return IAC_DEF[typeKey]||(customDefs.iac||{})[typeKey];
-  };
-  const getDb=dept=>dept==="mech"?mechDb:iacDb;
-  const setDb=(dept,v)=>dept==="mech"?setMechDb(v):setIacDb(v);
-
-  const openAdd=(dept,typeKey)=>{
-    setForm({status:"Active",probes:[],controller:{type:"",brand:"",model:"",ipRating:"",cabinet:""},signals:initSignals(typeKey)});
-    setErrs({});setModal({mode:"add",dept,typeKey});
-  };
-  const openEdit=(dept,typeKey,item,idx)=>{
-    const sigs={...initSignals(typeKey),...(item.signals||{})};
-    setForm({...item,probes:item.probes||[],controller:item.controller||{type:"",brand:"",model:"",ipRating:"",cabinet:""},signals:sigs});
-    setErrs({});setModal({mode:"edit",dept,typeKey,item,idx});
-  };
+  const openAdd=(dept,typeKey)=>{setForm({status:"Active",probes:[],controller:{type:"None"},signals:{}});setErrs({});setModal({mode:"add",dept,typeKey});};
+  const openEdit=(dept,typeKey,item,idx)=>{setForm({...item,probes:item.probes||[],controller:item.controller||{type:"None"},signals:item.signals||{}});setErrs({});setModal({mode:"edit",dept,typeKey,item,idx});};
   const closeModal=()=>{setModal(null);setForm({});setErrs({});};
-
-  const handleFormChange=(k,v)=>{setForm(p=>({...p,[k]:v}));if(errs[k])setErrs(p=>({...p,[k]:null}));};
 
   const validate=()=>{
     const e={},tag=(form.tagName||"").trim().toUpperCase();
@@ -1161,17 +820,14 @@ function App(){
   const saveItem=()=>{
     if(!validate())return;
     const item={...form,tagName:(form.tagName||"").trim().toUpperCase()};
-    const db=getDb(modal.dept);
-    const upd={...db,[modal.typeKey]:[...(db[modal.typeKey]||[])]};
+    const db=getDb(modal.dept);const upd={...db,[modal.typeKey]:[...(db[modal.typeKey]||[])]};
     if(modal.mode==="add")upd[modal.typeKey].push(item);else upd[modal.typeKey][modal.idx]=item;
-    setDb(modal.dept,upd);
-    showToast(modal.mode==="add"?`${item.tagName} added`:`${item.tagName} updated`);closeModal();
+    setDb(modal.dept,upd);showToast(modal.mode==="add"?`${item.tagName} added`:`${item.tagName} updated`);closeModal();
   };
 
   const confirmDel=()=>{
-    const{dept,typeKey,idx,tag}=delC;
-    const db=getDb(dept);const upd={...db,[typeKey]:[...(db[typeKey]||[])]};upd[typeKey].splice(idx,1);
-    setDb(dept,upd);showToast(`${tag} removed`,"info");setDel(null);
+    const{dept,typeKey,idx,tag}=delC;const db=getDb(dept);const upd={...db,[typeKey]:[...(db[typeKey]||[])]};
+    upd[typeKey].splice(idx,1);setDb(dept,upd);showToast(`${tag} removed`,"info");setDel(null);
   };
 
   const addCustomType=(dept,key,def)=>{
@@ -1180,123 +836,81 @@ function App(){
     showToast(`${def.label} type created`);
   };
 
-  const updateProbeAssignment=(tag,data)=>{
-    setIacDb(p=>({...p,probeAssignments:{...(p.probeAssignments||{}),[tag]:data}}));
-    showToast("IO assignment saved");
-  };
-
-  /* ─ Exports ─ */
-  const exportDept=dept=>{
+  /* ── Export functions ── */
+  const exportDept=(dept)=>{
     const defs=dept==="mech"?{...MECH_DEF,...(customDefs.mech||{})}:{...IAC_DEF,...(customDefs.iac||{})};
     const db=getDb(dept);const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([[`AQUABASE — ${dept==="mech"?"MECHANICS":"I&C"}`],["Project:",project],["Exported:",new Date().toLocaleString()],[],["Type","Count"],...Object.entries(defs).map(([k,d])=>[d.label,(db[k]||[]).length])]),"Summary");
-    Object.entries(defs).forEach(([k,def])=>{
-      const items=db[k]||[];if(!items.length)return;
-      const h=["Tag Name",...def.fields.map(f=>f.l)];
-      const r=items.map(i=>[i.tagName,...def.fields.map(f=>i[f.k]??"")]);
-      const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws["!cols"]=h.map((_,i)=>({wch:i===0?14:i===1?28:16}));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([[`AQUABASE \u2014 ${dept==="mech"?"MECHANICS":"I&C"}`],["Project:",project],["Exported:",new Date().toLocaleString()],[],["Type","Count"],...Object.entries(defs).map(([k,d])=>[d.label,(db[k]||[]).length])]),"Summary");
+    Object.entries(defs).forEach(([k,def])=>{const items=db[k]||[];if(!items.length)return;
+      const h=["Tag Name","Area","P&ID Ref",...def.fields.map(f=>f.l)];
+      const r=items.map(i=>[i.tagName,i.area||"",i.pidRef||"",...def.fields.map(f=>i[f.k]??"")]);
+      const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws["!cols"]=h.map((_,i)=>({wch:i===0?14:i<=2?10:i===3?28:16}));
       XLSX.utils.book_append_sheet(wb,ws,def.label.substring(0,31));
     });
-    XLSX.writeFile(wb,`${project.replace(/[^a-z0-9]/gi,"_")}_${dept==="mech"?"MECHANICS":"IAC"}.xlsx`);
-    showToast(`${dept==="mech"?"Mechanics":"I&C"} exported`);
+    XLSX.writeFile(wb,`${project.replace(/[^a-z0-9]/gi,"_")}_${dept==="mech"?"MECHANICS":"IAC"}.xlsx`);showToast(`${dept==="mech"?"Mechanics":"I&C"} exported`);
   };
 
   const exportIOList=()=>{
-    const rows=[];
-    const header=["Full Signal Tag","Equipment Tag","Area","Dept","Equipment Type","Signal / Probe Name","Code","Signal Type","Connection","Protocol","Controller Type","Controller Brand","Controller Model","Status"];
-    // Motor/Valve/Solenoid variants
-    ["motor","valve","solenoid"].forEach(k=>{
-      const def=MECH_DEF[k];
-      (mechDb[k]||[]).forEach(equip=>{
-        Object.entries(equip.signals||{}).forEach(([id,sig])=>{
-          if(!sig.enabled)return;
-          const vDef=(k==="motor"?MOTOR_VARIANTS:k==="valve"?VALVE_VARIANTS:SOL_VARIANTS).find(v=>v.id===id);
-          rows.push([
-            fullTag(equip.tagName,equip.area,sig.code),
-            equip.tagName,equip.area||"",
-            "MECH",def.label,
-            vDef?.name||id,sig.code,sig.signalType,
-            sig.commMethod,sig.commMethod!=="Hardwired"?sig.commMethod:"—",
-            equip.controller?.type||"",equip.controller?.brand||"",equip.controller?.model||"",
-            equip.status||""
-          ]);
-        });
-      });
-    });
-    // Machine probes
-    const pa=iacDb.probeAssignments||{};
-    ["motor","pump"].forEach(k=>{
-      (mechDb[k]||[]).forEach(equip=>{
-        (equip.probes||[]).forEach(probe=>{
-          const tag=fullTag(equip.tagName,equip.area,probe.code);
-          const a=pa[tag]||{};
-          rows.push([tag,equip.tagName,equip.area||"","MECH/I&C",`${MECH_DEF[k].label} Probe`,probe.type+": "+probe.position,probe.code,a.signalType||"AI","I&C Assignment","—","","","",equip.status||""]);
-        });
-      });
-    });
+    const wb=XLSX.utils.book_new();const rows=[];
+    const header=["Full Signal Tag","Instance Tag","Equip. Tag","Area","P&ID Ref","Dept","Equipment Type","Signal Name","Signal Code","Signal Type","Wiring","Protocol","Controller Type","Controller Brand","Controller Model"];
     // I&C instruments
-    const iacDefs={...IAC_DEF,...(customDefs.iac||{})};
-    Object.entries(iacDefs).forEach(([k,def])=>{
-      (iacDb[k]||[]).forEach(item=>{
-        if(!item.ioTag&&!item.signalType)return;
-        const tag=fullTag(item.tagName,item.area,item.ioTag||"");
-        rows.push([tag,item.tagName,item.area||"","I&C",def.label,item.description||"",item.ioTag||"",item.signalType||"","I&C IO","—","","","",item.status||""]);
+    const iDefs={...IAC_DEF,...(customDefs.iac||{})};
+    Object.entries(iDefs).forEach(([k,def])=>{(iacDb[k]||[]).forEach(item=>{
+      const inst=mkInstanceTag(item.tagName,item.area||"");
+      if(item.ioTag||item.signalType){rows.push([mkSignalTag(item.tagName,item.area||"",item.ioTag||"IO"),inst,item.tagName,item.area||"",item.pidRef||"","I&C",def.label,item.description||"",item.ioTag||"",item.signalType||"","Hardwired","",def.label,"",item.model||""]);}
+    });});
+    // Mechanics: controller variants
+    const mDefs={...MECH_DEF,...(customDefs.mech||{})};
+    Object.entries(mDefs).forEach(([k,def])=>{(mechDb[k]||[]).forEach(item=>{
+      const inst=mkInstanceTag(item.tagName,item.area||"");const ctrl=item.controller||{};
+      Object.entries(item.signals||{}).forEach(([vid,sv])=>{
+        if(!sv.enabled)return;
+        const vdef=(CV[ctrl.type]||[]).find(v=>v.id===vid)||{label:vid};
+        rows.push([mkSignalTag(item.tagName,item.area||"",sv.code||vid),inst,item.tagName,item.area||"",item.pidRef||"","MECH",def.label,vdef.label,sv.code||vid,sv.signalType||vdef.sig||"",sv.connMethod||"Hardwired",sv.connMethod==="Communication"?sv.protocol||"":"",CTRL_LABEL[ctrl.type]||ctrl.type||"",ctrl.brand||"",ctrl.model||""]);
       });
-    });
-    if(!rows.length){showToast("No IO data yet — add equipment with signals/probes first","warning");return;}
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-    ws["!cols"]=header.map((_,i)=>({wch:i===0?24:i===1?12:i===4?20:i===5?28:14}));
+      // Probes
+      (item.probes||[]).forEach(p=>{if(!p.code)return;
+        rows.push([mkSignalTag(item.tagName,item.area||"",p.code),inst,item.tagName,item.area||"",item.pidRef||"","MECH (Probe)",def.label,`${p.type} \u2014 ${p.position||""}`,p.code,p.sig||"AI","Hardwired (Probe)","",p.sensorType||"","",""]);
+      });
+    });});
+    if(!rows.length){showToast("No IO data yet \u2014 add controllers/variants first","warning");return;}
+    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);ws["!cols"]=header.map((_,i)=>({wch:i===0?26:i<=2?14:14}));
     XLSX.utils.book_append_sheet(wb,ws,"IO List");
     const sigs=["AI","AO","DI","DO","HART AI","HART AO","Pulse"];
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["AQUABASE — IO LIST"],["Project:",project],["Generated:",new Date().toLocaleString()],[],["Signal Type","Count"],...sigs.map(s=>[s,rows.filter(r=>r[7]===s).length]),["",""],["TOTAL",rows.length]]),"Summary");
-    XLSX.writeFile(wb,`${project.replace(/[^a-z0-9]/gi,"_")}_IO_List.xlsx`);
-    showToast(`IO List exported — ${rows.length} signals`);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["IO LIST SUMMARY"],["Project:",project],["Generated:",new Date().toLocaleString()],[],["Signal Type","Count"],...sigs.map(s=>[s,rows.filter(r=>r[9]===s).length]),["",""],["TOTAL",rows.length]]),"Summary");
+    XLSX.writeFile(wb,`${project.replace(/[^a-z0-9]/gi,"_")}_IO_List.xlsx`);showToast(`IO List exported \u2014 ${rows.length} signals`);
   };
 
-  /* ─ Imports ─ */
   const importDept=(dept,e)=>{
     const file=e.target.files[0];if(!file)return;
     const defs=dept==="mech"?{...MECH_DEF,...(customDefs.mech||{})}:{...IAC_DEF,...(customDefs.iac||{})};
-    const reader=new FileReader();
-    reader.onload=ev=>{try{
-      const wb=XLSX.read(ev.target.result,{type:"binary"});let added=0,skipped=0;
-      const curTags=new Set(allTags);const db=getDb(dept);const upd={...db};
-      Object.entries(defs).forEach(([k,def])=>{
-        const sh=wb.SheetNames.find(n=>n.toLowerCase().includes(def.label.toLowerCase().slice(0,5)));if(!sh)return;
-        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sh],{header:1});if(rows.length<2)return;
-        const hd=rows[0];if(!upd[k])upd[k]=[];
-        rows.slice(1).forEach(row=>{if(!row[0])return;const tag=String(row[0]).toUpperCase().trim();if(curTags.has(tag)){skipped++;return;}
-          const item={tagName:tag,probes:[],signals:initSignals(k),controller:{}};
-          hd.forEach((h,i)=>{if(h==="Tag Name")return;const field=def.fields.find(f=>f.l===h);if(field)item[field.k]=row[i]!==undefined?String(row[i]):"";});
-          upd[k].push(item);curTags.add(tag);added++;});
-      });
-      setDb(dept,upd);showToast(`${added} added${skipped?`, ${skipped} skipped`:""}`,added?"success":"warning");
-    }catch{showToast("Import failed","error");}};
-    reader.readAsBinaryString(file);e.target.value="";
+    const reader=new FileReader();reader.onload=ev=>{try{
+      const wb=XLSX.read(ev.target.result,{type:"binary"});let a=0,s=0;const ct=new Set(allTags);const db=getDb(dept);const upd={...db};
+      Object.entries(defs).forEach(([k,def])=>{const sh=wb.SheetNames.find(n=>n.toLowerCase().includes(def.label.toLowerCase().slice(0,5)));if(!sh)return;
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sh],{header:1});if(rows.length<2)return;const hd=rows[0];if(!upd[k])upd[k]=[];
+        rows.slice(1).forEach(row=>{if(!row[0])return;const tag=String(row[0]).toUpperCase().trim();if(ct.has(tag)){s++;return;}
+          const item={tagName:tag,probes:[],controller:{type:"None"},signals:{}};
+          hd.forEach((h,i)=>{if(h==="Tag Name")return;if(h==="Area"){item.area=row[i]?String(row[i]):"";return;}if(h==="P&ID Ref"){item.pidRef=row[i]?String(row[i]):"";return;}const field=def.fields.find(f=>f.l===h);if(field)item[field.k]=row[i]!==undefined?String(row[i]):"";});
+          upd[k].push(item);ct.add(tag);a++;});});
+      setDb(dept,upd);showToast(`${a} added${s?`, ${s} skipped`:""}`,a?"success":"warning");
+    }catch{showToast("Import failed","error");}};reader.readAsBinaryString(file);e.target.value="";
   };
 
-  /* ─ Displayed items ─ */
-  const currentDef=view&&view!=="probes"?getDef(view.dept,view.typeKey):null;
-  const currentItems=view&&view!=="probes"?(getDb(view.dept)[view.typeKey]||[]):[];
+  const currentDef=view?getDef(view.dept,view.typeKey):null;
+  const currentItems=view&&view.typeKey!=="__probes__"?(getDb(view.dept)[view.typeKey]||[]):[];
   const displayed=useMemo(()=>{
-    if(!view||view==="probes")return[];
-    let list=[...currentItems];
-    if(q){const lq=q.toLowerCase();list=list.filter(i=>Object.values(i).some(v=>typeof v==="string"&&v.toLowerCase().includes(lq)));}
+    if(!view||view.typeKey==="__probes__")return[];let list=[...currentItems];
+    if(q){const lq=q.toLowerCase();list=list.filter(i=>Object.values(i).some(v=>String(v).toLowerCase().includes(lq)));}
     if(stF!=="All")list=list.filter(i=>i.status===stF);
-    list.sort((a,b)=>{const av=String(a[sort.k]??""),bv=String(b[sort.k]??"");return sort.d==="asc"?av.localeCompare(bv):bv.localeCompare(av);});
-    return list;
+    list.sort((a,b)=>{const av=String(a[sort.k]??""),bv=String(b[sort.k]??"");return sort.d==="asc"?av.localeCompare(bv):bv.localeCompare(av);});return list;
   },[view,currentItems,q,stF,sort]);
 
-  const navTo=(dept,typeKey)=>{setView({dept,typeKey});setQ("");setStF("All");setSort({k:"tagName",d:"asc"});};
-  const mechDefs={...MECH_DEF,...(customDefs.mech||{})};
-  const iacDefs={...IAC_DEF,...(customDefs.iac||{})};
-  const totalProbes=["motor","pump"].reduce((s,k)=>s+(mechDb[k]||[]).reduce((ss,e)=>ss+(e.probes||[]).length,0),0);
+  const navTo=(dept,key)=>{setView({dept,typeKey:key});setQ("");setStF("All");setSort({k:"tagName",d:"asc"});};
+  const mDefs={...MECH_DEF,...(customDefs.mech||{})};const iDefs={...IAC_DEF,...(customDefs.iac||{})};
 
   return(<div style={{display:"flex",flexDirection:"column",height:"100vh",background:BG,color:TXT,fontFamily:"'Segoe UI',system-ui,sans-serif",overflow:"hidden"}}>
     <style>{`*{box-sizing:border-box;margin:0;padding:0}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:${SRF}}::-webkit-scrollbar-thumb{background:${BDR2};border-radius:3px}::-webkit-scrollbar-thumb:hover{background:${ACC}}select option{background:${CRD}}`}</style>
 
-    {/* HEADER */}
     <header style={{height:54,background:SRF,borderBottom:`1px solid ${BDR}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1307,37 +921,34 @@ function App(){
         {editP?<input autoFocus value={tmpP} onChange={e=>setTmpP(e.target.value)} onBlur={()=>{setProject(tmpP);setEditP(false);}} onKeyDown={e=>{if(e.key==="Enter"){setProject(tmpP);setEditP(false);}if(e.key==="Escape")setEditP(false);}} style={{background:CRD,border:`1px solid ${ACC}`,borderRadius:6,padding:"3px 9px",color:TXT,fontSize:12,fontWeight:500,minWidth:240,outline:"none"}}/>
         :<button onClick={()=>{setTmpP(project);setEditP(true);}} style={{background:"none",border:"none",color:TXT,fontSize:12,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:"2px 5px",borderRadius:5}}>{project}<Pencil size={11} color={DIM}/></button>}
       </div>
-      <span style={{fontSize:10,color:DIM}}>IO List = generated from variants & probes</span>
+      <span style={{fontSize:10,color:DIM}}>IO List = generated output \u00b7 Tag format: EQUIP-AREA-CODE</span>
     </header>
 
-    {/* BODY */}
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
-      {/* SIDEBAR */}
-      <nav style={{width:210,background:SRF,borderRight:`1px solid ${BDR}`,overflowY:"auto",flexShrink:0,paddingBottom:16}}>
-        <NavItem label="Overview" active={!view} color={ACC} count={[...Object.values(mechDb),...Object.values(iacDb).filter(v=>Array.isArray(v))].flat().length} onClick={()=>setView(null)}/>
+      <nav style={{width:204,background:SRF,borderRight:`1px solid ${BDR}`,overflowY:"auto",flexShrink:0,paddingBottom:16}}>
+        <NavItem label="Overview" active={!view} color={ACC} count={[...Object.values(mechDb),...Object.values(iacDb)].flat().length} onClick={()=>setView(null)}/>
         <SecLabel label="Mechanics" color={MC}/>
-        {Object.entries(mechDefs).map(([k,def])=>(
-          <NavItem key={k} label={def.label} active={view?.typeKey===k&&view?.dept==="mech"} color={def.color} count={mechDb[k]?.length||0} onClick={()=>navTo("mech",k)} indent italic={def.custom}/>
-        ))}
-        <button onClick={()=>setNewTypeDept("mech")} style={{width:"calc(100% - 16px)",margin:"4px 8px",background:"transparent",border:`1px dashed ${MC}33`,borderRadius:6,padding:"4px",color:MC,fontSize:10,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><Plus size={10}/> New type</button>
+        {Object.entries(mDefs).map(([k,def])=><NavItem key={k} label={def.label} active={view?.dept==="mech"&&view?.typeKey===k} color={def.color} count={mechDb[k]?.length||0} onClick={()=>navTo("mech",k)} indent italic={def.custom}/>)}
+        <button onClick={()=>setNewTypeDept("mech")} style={{width:"calc(100% - 16px)",margin:"4px 8px",background:"transparent",border:`1px dashed ${MC}33`,borderRadius:6,padding:"4px",color:MC,fontSize:10,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><Plus size={10}/>New type</button>
         <SecLabel label="I&C" color={IC}/>
-        {Object.entries(iacDefs).map(([k,def])=>(
-          <NavItem key={k} label={def.label} active={view?.typeKey===k&&view?.dept==="iac"} color={def.color} count={iacDb[k]?.length||0} onClick={()=>navTo("iac",k)} indent italic={def.custom}/>
-        ))}
-        <NavItem label="Machine Probes" active={view==="probes"} color="#06b6d4" count={totalProbes} onClick={()=>setView("probes")} indent/>
-        <button onClick={()=>setNewTypeDept("iac")} style={{width:"calc(100% - 16px)",margin:"4px 8px",background:"transparent",border:`1px dashed ${IC}33`,borderRadius:6,padding:"4px",color:IC,fontSize:10,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><Plus size={10}/> New type</button>
+        {Object.entries(iDefs).map(([k,def])=><NavItem key={k} label={def.label} active={view?.dept==="iac"&&view?.typeKey===k} color={def.color} count={iacDb[k]?.length||0} onClick={()=>navTo("iac",k)} indent italic={def.custom}/>)}
+        {Object.values(mechDb).flat().some(i=>i.probes?.length>0)&&<NavItem label="Motor/Pump Probes" active={view?.typeKey==="__probes__"} color={IC} count={Object.values(mechDb).flat().reduce((s,i)=>s+(i.probes?.length||0),0)} onClick={()=>navTo("iac","__probes__")} indent/>}
+        <button onClick={()=>setNewTypeDept("iac")} style={{width:"calc(100% - 16px)",margin:"4px 8px",background:"transparent",border:`1px dashed ${IC}33`,borderRadius:6,padding:"4px",color:IC,fontSize:10,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><Plus size={10}/>New type</button>
       </nav>
 
-      {/* MAIN */}
       <main style={{flex:1,overflowY:"auto",padding:20,background:BG}}>
-        {!view&&<Overview mechDb={mechDb} iacDb={iacDb} customDefs={customDefs} onNav={navTo} onAddType={dept=>setNewTypeDept(dept)} onMI={e=>importDept("mech",e)} onME={()=>exportDept("mech")} onII={e=>importDept("iac",e)} onIE={()=>exportDept("iac")} onExportIO={exportIOList} mRef={mRef} iRef={iRef}/>}
-        {view==="probes"&&<ProbesView mechDb={mechDb} probeAssignments={iacDb.probeAssignments||{}} onUpdateAssignment={updateProbeAssignment}/>}
-        {view&&view!=="probes"&&<EqTable dept={view.dept} typeKey={view.typeKey} def={currentDef} allItems={currentItems} displayed={displayed} q={q} setQ={setQ} stF={stF} setStF={setStF} sort={sort} setSort={setSort} onAdd={()=>openAdd(view.dept,view.typeKey)} onEdit={(item,idx)=>openEdit(view.dept,view.typeKey,item,idx)} onDel={(item,idx)=>setDel({dept:view.dept,typeKey:view.typeKey,idx,tag:item.tagName})}/>}
+        {!view?<Overview mechDb={mechDb} iacDb={iacDb} customDefs={customDefs} onNav={navTo} onAddType={d=>setNewTypeDept(d)} onMI={e=>importDept("mech",e)} onME={()=>exportDept("mech")} onII={e=>importDept("iac",e)} onIE={()=>exportDept("iac")} onExportIO={exportIOList} mRef={mRef} iRef={iRef}/>
+        :view.typeKey==="__probes__"?<ProbesView mechDb={mechDb}/>
+        :<EqTable dept={view.dept} equipKey={view.typeKey} def={currentDef} allItems={currentItems} displayed={displayed} q={q} setQ={setQ} stF={stF} setStF={setStF} sort={sort} setSort={setSort}
+            onAdd={()=>openAdd(view.dept,view.typeKey)} onEdit={(item,idx)=>openEdit(view.dept,view.typeKey,item,idx)} onDel={(item,idx)=>setDel({dept:view.dept,typeKey:view.typeKey,idx,tag:item.tagName})}/>}
       </main>
     </div>
 
-    {modal&&<ItemModal def={getDef(modal.dept,modal.typeKey)} typeKey={modal.typeKey} dept={modal.dept} modal={modal} form={form} errs={errs} onChange={handleFormChange} onSave={saveItem} onClose={closeModal}/>}
+    {modal&&<ItemModal def={getDef(modal.dept,modal.typeKey)} equipKey={modal.typeKey} dept={modal.dept} modal={modal} form={form} errs={errs}
+      onChange={(k,v)=>{setForm(p=>({...p,[k]:v}));if(errs[k])setErrs(p=>({...p,[k]:null}));}} onSave={saveItem} onClose={closeModal}/>}
+
     {newTypeDept&&<NewTypeModal dept={newTypeDept} onAdd={(key,def)=>addCustomType(newTypeDept,key,def)} onClose={()=>setNewTypeDept(null)}/>}
+
     {delC&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500}}>
       <div style={{background:CRD,border:`1px solid ${DNG}55`,borderRadius:11,padding:22,maxWidth:360,width:"92%"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}><Trash2 size={18} color={DNG}/><h3 style={{color:DNG,fontSize:15,fontWeight:600}}>Delete Item</h3></div>
@@ -1348,13 +959,14 @@ function App(){
         </div>
       </div>
     </div>}
+
     {toast&&<div style={{position:"fixed",bottom:18,right:18,background:toast.type==="error"?DNG:toast.type==="info"?ACC:toast.type==="warning"?WRN:SUC,color:"#fff",padding:"10px 16px",borderRadius:8,boxShadow:"0 4px 20px rgba(0,0,0,.5)",zIndex:900,fontSize:13,fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
       {toast.type==="error"||toast.type==="warning"?<AlertTriangle size={15}/>:<CheckCircle size={15}/>}{toast.msg}
     </div>}
   </div>);
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
